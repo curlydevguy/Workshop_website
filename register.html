@@ -1,419 +1,188 @@
-// register.html — fee summary + Razorpay checkout flow.
-// Talks to two serverless functions:
-//   POST /api/register  -> creates a pending row + a Razorpay order
-//   POST /api/verify    -> verifies the payment signature, flips the row to "paid"
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register — AI for Secure 6G: Foundations of FL, XAI, and LLMs</title>
+<meta name="description" content="Register for AI for Secure 6G: Foundations of FL, XAI, and LLMs. Fill in your details and pay securely online via Razorpay to confirm your seat.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%232563eb%27/%3E%3Ctext x=%2732%27 y=%2743%27 font-family=%27system-ui,sans-serif%27 font-size=%2730%27 font-weight=%27800%27 fill=%27%23ffffff%27 text-anchor=%27middle%27%3ES6%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/base.css">
+<meta name="view-transition" content="same-origin">
+</head>
+<body data-page="register">
 
-(function () {
-  const form = document.getElementById('regForm');
-  if (!form) return; // only runs on register.html
+<!-- ============ HEADER INJECTION POINT ============ -->
+<div id="header-placeholder"></div>
 
-  const categorySelect = document.getElementById('category');
-  const feeSummary = document.getElementById('feeSummary');
-  const feeSummaryAmount = document.getElementById('feeSummaryAmount');
-  const payBtn = document.getElementById('payBtn');
-  const formError = document.getElementById('formError');
-  const regSuccess = document.getElementById('regSuccess');
-  const idProofInput = document.getElementById('idProof');
-  const idProofSelected = document.getElementById('idProofSelected');
+<main>
 
-  const emailInput = document.getElementById('email');
-  const iitrVerifyBlock = document.getElementById('iitrVerifyBlock');
-  const sendOtpBtn = document.getElementById('sendOtpBtn');
-  const emailVerifyStatus = document.getElementById('emailVerifyStatus');
-  const otpRow = document.getElementById('otpRow');
-  const otpInput = document.getElementById('otpInput');
-  const verifyOtpBtn = document.getElementById('verifyOtpBtn');
-  const otpStatus = document.getElementById('otpStatus');
-  const resendOtpLink = document.getElementById('resendOtpLink');
+  <!-- ============ HERO SECTION ============ -->
+  <section class="page-hero page-hero-tint">
+    <div class="wrap">
+      <span class="eyebrow">Registration</span>
+      <h1>Register for AI for Secure 6G: Foundations of FL, XAI, and LLMs</h1>
+      <p class="subtitle" style="margin: 0 auto;">Fill in your details, choose your category, and pay securely online. Your seat is confirmed the moment payment is verified — no manual steps, no waiting.</p>
+    </div>
+  </section>
 
-  const MAX_ID_PROOF_BYTES = 4 * 1024 * 1024; // 4 MB — keep serverless request bodies small
-  const IITR_DOMAIN = 'iitr.ac.in';
+  <!-- ============ SIDE-BY-SIDE LAYOUT ============ -->
+  <section class="section-alt reveal">
+    <div class="wrap details-grid-2">
 
-  // Accepts the main domain and any department subdomain:
-  // someone@iitr.ac.in, someone@cs.iitr.ac.in, someone@ma.iitr.ac.in, etc.
-  // Covers students, faculty, and researchers across all IITR departments.
-  function isIitrEmail(email) {
-    const domain = (email.split('@')[1] || '').toLowerCase();
-    return domain === IITR_DOMAIN || domain.endsWith('.' + IITR_DOMAIN);
-  }
+      <!-- LEFT COLUMN: Instructions (Shaded Panel) -->
+      <div class="panel panel-shade">
+        <div class="section-head">
+          <span class="eyebrow">Instructions</span>
+          <h2>How to register</h2>
+        </div>
 
-  // Single source of truth for "what email are we comparing". Strips zero-width
-  // and other invisible characters that autofill/extensions occasionally inject,
-  // in addition to the usual trim + lowercase. Every comparison in this file
-  // goes through this function so verify-time and submit-time can never drift.
-  function normalizeEmail(raw) {
-    return (raw || '')
-      .replace(/[\u200B-\u200D\uFEFF]/g, '') // zero-width space/joiner/BOM
-      .trim()
-      .toLowerCase();
-  }
+        <ol class="step-list" style="font-size: clamp(1.1rem, 1.5vw, 1.35rem); line-height: 1.8; margin-top: 1rem;">
+          <li style="margin-bottom: 1.5rem;">Review the <a href="details.html">workshop details and fee structure</a> to confirm your registration category.</li>
+          <li style="margin-bottom: 1.5rem;">Fill in the form with your details — the fee updates automatically based on your category.</li>
+          <li style="margin-bottom: 1.5rem;">Click <strong>Proceed to Payment</strong> and complete payment securely via Razorpay (cards, UPI, netbanking).</li>
+          <li>Your registration is confirmed instantly once payment succeeds — no receipt upload, no waiting for manual verification.</li>
+        </ol>
 
-  // ---- Email verification state (only relevant for @iitr.ac.in addresses) ----
-  // challengeToken: proof a code was sent, needed to check what the user types back
-  // verifiedToken: proof the email was actually confirmed, sent along at final submit
-  let challengeToken = null;
-  let verifiedToken = null;
-  let verifiedEmail = null; // normalized IITR email the verifiedToken belongs to
-  let autoSelectedCategory = false; // true if we auto-picked "iitr_student" for them
+        <div class="note-box" style="margin-top: 3rem; background: var(--white);">
+          <strong>Secure payments.</strong> All payments are processed by Razorpay. We never see or store your card, UPI, or banking details.
+        </div>
 
-  function resetVerification() {
-    verifiedToken = null;
-    verifiedEmail = null;
-    challengeToken = null;
-    otpRow.hidden = true;
-    otpInput.value = '';
-    emailVerifyStatus.hidden = true;
-    emailVerifyStatus.innerHTML = '';
-    sendOtpBtn.hidden = false;
-    sendOtpBtn.disabled = false;
-    sendOtpBtn.textContent = 'Send Code';
-    otpStatus.textContent = '';
-    emailInput.readOnly = false;
-    emailInput.classList.remove('is-locked');
-  }
+        <div class="note-box" style="margin-top: 1.5rem; background: var(--white);">
+          <strong>Need help?</strong> If you experience any issues during payment or registration, please reach out via the <a href="contact.html">Contact page</a> and include the reference ID shown after payment, if you have one.
+        </div>
+      </div>
 
-  function currentFee() {
-    const opt = categorySelect.options[categorySelect.selectedIndex];
-    const fee = opt ? Number(opt.dataset.fee) : NaN;
-    return Number.isFinite(fee) ? fee : null;
-  }
+      <!-- RIGHT COLUMN: The Form (White Panel) -->
+      <div class="panel">
+        <div class="section-head">
+          <span class="eyebrow">Registration Form</span>
+          <h2>Participant details</h2>
+        </div>
 
-  function updateFeeSummary() {
-    const fee = currentFee();
-    if (fee === null) {
-      feeSummary.hidden = true;
-      return;
-    }
-    feeSummaryAmount.textContent = '₹' + fee.toLocaleString('en-IN');
-    feeSummary.hidden = false;
-  }
+        <!-- ============ FORM STATE ============ -->
+        <form id="regForm" class="reg-form" novalidate>
 
-  // ---- Core: react to the email field, live ----
-  function handleEmailChange() {
-    // The field is locked (readonly) once verified, so this only runs for
-    // genuine edits by the user — never a spurious re-fire after verifying.
-    const email = emailInput.value.trim();
-    const iitr = email && isIitrEmail(email);
+          <div class="form-grid-2">
+            <div class="form-row">
+              <label for="fullName">Full Name</label>
+              <input type="text" id="fullName" name="fullName" required autocomplete="name">
+            </div>
+            <div class="form-row">
+              <label for="email">Email Address</label>
+              <input type="email" id="email" name="email" required autocomplete="email">
+            </div>
+          </div>
 
-    if (iitr) {
-      iitrVerifyBlock.hidden = false;
+          <div class="form-grid-2">
+            <div class="form-row">
+              <label for="phone">Phone Number</label>
+              <input type="tel" id="phone" name="phone" required autocomplete="tel">
+            </div>
+            <div class="form-row">
+              <label for="institute">Institute / Organization</label>
+              <input type="text" id="institute" name="institute" required autocomplete="organization">
+            </div>
+          </div>
 
-      // Auto-select the IITR rate if the user hasn't manually chosen a
-      // different category themselves.
-      if (!categorySelect.value || autoSelectedCategory) {
-        categorySelect.value = 'iitr_student';
-        autoSelectedCategory = true;
-        updateFeeSummary();
-      }
+          <div class="form-row">
+            <label for="category">Registration Category</label>
+            <select id="category" name="category" required>
+              <option value="">Select your category...</option>
+              <option value="iitr_student" data-fee="500">IIT Roorkee Student / Scholar — ₹500</option>
+              <option value="other_student" data-fee="1000">Other Institute Student / Scholar / Faculty — ₹1000</option>
+              <option value="industry" data-fee="2000">Industry Professional / Others — ₹2000</option>
+            </select>
+          </div>
 
-      // If they'd verified a different email earlier, that verification
-      // no longer applies to what's currently typed.
-      if (verifiedEmail && normalizeEmail(email) !== verifiedEmail) {
-        resetVerification();
-      }
-    } else {
-      iitrVerifyBlock.hidden = true;
-      resetVerification();
+          <!-- ============ IITR EMAIL VERIFICATION (auto-shown when the Email Address above is an @iitr.ac.in address) ============ -->
+          <div class="form-row" id="iitrVerifyBlock" hidden>
+            <span class="field-hint">We detected an IIT Roorkee email address — verify it below to unlock the ₹500 rate.</span>
+            <div style="display:flex; gap:0.5rem; align-items:center; margin-top:0.35rem;">
+              <button type="button" id="sendOtpBtn" class="btn btn-secondary" style="white-space:nowrap;">Send Code</button>
+            </div>
+            <span class="field-hint" id="emailVerifyStatus" hidden></span>
 
-      // Only clear an auto-selected category — never touch a category the
-      // user picked manually themselves.
-      if (autoSelectedCategory) {
-        categorySelect.value = '';
-        autoSelectedCategory = false;
-        updateFeeSummary();
-      }
-    }
-  }
+            <div id="otpRow" hidden style="margin-top:0.75rem;">
+              <label for="otpInput">Enter the 6-digit code sent to your email</label>
+              <div style="display:flex; gap:0.5rem; align-items:center;">
+                <input type="text" id="otpInput" inputmode="numeric" pattern="[0-9]*" maxlength="6" style="flex:1;" placeholder="123456">
+                <button type="button" id="verifyOtpBtn" class="btn btn-secondary" style="white-space:nowrap;">Verify Code</button>
+              </div>
+              <span class="field-hint" id="otpStatus"></span>
+              <span class="field-hint"><a href="#" id="resendOtpLink">Resend code</a></span>
+            </div>
+          </div>
 
-  emailInput.addEventListener('input', handleEmailChange);
+          <div class="form-row">
+            <label for="idProof">College ID Card Photo (showing your Roll No.)</label>
+            <input type="file" id="idProof" name="idProof" accept="image/*,.pdf" required>
+            <span class="field-hint">Upload a clear photo or scan of your college ID card — your roll number must be visible. JPG, PNG, or PDF, max 4 MB.</span>
+            <span class="file-selected" id="idProofSelected" hidden></span>
+          </div>
 
-  // If the user manually changes the category themselves, it's no longer
-  // "auto-selected" — don't clobber their choice later.
-  categorySelect.addEventListener('change', () => {
-    autoSelectedCategory = false;
-    updateFeeSummary();
-  });
+          <!-- ============ FEE SUMMARY (updates live) ============ -->
+          <div class="fee-summary" id="feeSummary" hidden>
+            <span class="fee-summary-label">Amount payable</span>
+            <span class="fee-summary-amount" id="feeSummaryAmount">₹0</span>
+          </div>
 
-  async function requestOtp() {
-    const email = emailInput.value.trim();
-    if (!email || !emailInput.checkValidity()) {
-      showError('Please enter a valid email address before requesting a code.');
-      emailInput.focus();
-      return;
-    }
-    if (!isIitrEmail(email)) {
-      showError(`The verification code can only be sent to an @${IITR_DOMAIN} email address.`);
-      emailInput.focus();
-      return;
-    }
+          <button type="submit" class="btn btn-primary" id="payBtn" style="margin-top: 0.5rem; width: 100%; font-size: 1.1rem; padding: 1rem;">
+            Proceed to Payment
+          </button>
 
-    sendOtpBtn.disabled = true;
-    sendOtpBtn.textContent = 'Sending...';
-    clearError();
+          <div class="form-error" id="formError" hidden></div>
 
-    try {
-      const res = await fetch('/api/send-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Could not send the verification code.');
+          <div class="form-submit-note">
+            Please double-check your email — your registration confirmation and any workshop updates will be sent there.
+          </div>
 
-      challengeToken = data.challengeToken;
-      otpRow.hidden = false;
-      otpStatus.textContent = 'Code sent — check your inbox (and spam folder).';
-      otpInput.focus();
-      sendOtpBtn.textContent = 'Code Sent';
-    } catch (err) {
-      showError(err.message || 'Could not send the verification code. Please try again.');
-      sendOtpBtn.disabled = false;
-      sendOtpBtn.textContent = 'Send Code';
-    }
-  }
+        </form>
 
-  sendOtpBtn.addEventListener('click', requestOtp);
-  resendOtpLink.addEventListener('click', (e) => {
-    e.preventDefault();
-    requestOtp();
-  });
+        <!-- ============ SUCCESS STATE (shown after verified payment) ============ -->
+        <div class="reg-success" id="regSuccess" hidden>
+          <div class="reg-success-icon">✓</div>
+          <h3>Registration confirmed</h3>
+          <p>Thanks, <span id="successName">there</span> — your payment has been verified and your seat for AI for Secure 6G: Foundations of FL, XAI, and LLMs is confirmed. A confirmation has been noted against <span id="successEmail">your email</span>.</p>
+          <p class="reg-success-id">Payment reference: <span id="successPaymentId">—</span></p>
+          <a class="btn btn-ghost" href="index.html">Back to home</a>
+        </div>
 
-  verifyOtpBtn.addEventListener('click', async () => {
-    const email = emailInput.value.trim();
-    const otp = otpInput.value.trim();
+      </div>
 
-    if (!challengeToken) {
-      otpStatus.textContent = 'Please request a code first.';
-      return;
-    }
-    if (!otp) {
-      otpStatus.textContent = 'Please enter the code from your email.';
-      return;
-    }
+    </div>
+  </section>
 
-    verifyOtpBtn.disabled = true;
-    verifyOtpBtn.textContent = 'Verifying...';
+</main>
 
-    try {
-      const res = await fetch('/api/verify-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, otp, challengeToken }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.verified) throw new Error(data.error || 'That code is incorrect or expired.');
+<!-- ============ FOOTER ============ -->
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-top">
+      <div class="footer-address">
+        <h3 class="footer-heading">Contact Us</h3>
+        <p>Department of Computer Science and Engineering,</p>
+        <p>Indian Institute of Technology,</p>
+        <p>Roorkee &ndash; 247667,</p>
+        <p>Uttarakhand, India</p>
+        <p class="footer-phone">Phone: <a href="tel:+911332285582">+91-1332-285582</a></p>
+        <p class="footer-phone">Email: <a href="mailto:csed@iitr.ac.in">csed@iitr.ac.in</a></p>
+      </div>
+      <div class="footer-map-wrap">
+        <div class="footer-map-frame">
+          <a class="footer-map-open" href="https://www.google.com/maps/search/?api=1&query=IIT+Roorkee" target="_blank" rel="noopener">Open in Maps ↗</a>
+          <iframe
+            src="https://www.google.com/maps?q=29.866932819020487,77.88688626753348&output=embed"
+            allowfullscreen="" loading="lazy"></iframe>
+        </div>
+        <a class="footer-directions-btn" href="https://www.google.com/maps/dir/?api=1&destination=IIT+Roorkee" target="_blank" rel="noopener">Get Directions</a>
+      </div>
+    </div>
+  </div>
+</footer>
 
-      verifiedToken = data.verifiedToken;
-      verifiedEmail = normalizeEmail(email);
-      otpStatus.textContent = '';
-      otpRow.hidden = true;
-      sendOtpBtn.hidden = true; // no more "Send Code" needed once verified
-
-      // Lock the field so nothing (autofill, an extension, a stray keystroke)
-      // can silently change it out from under the verification we just got.
-      // This is the actual fix: submit-time no longer depends on the field
-      // staying byte-for-byte identical to what it was at verify-time.
-      emailInput.readOnly = true;
-      emailInput.classList.add('is-locked');
-
-      emailVerifyStatus.innerHTML = '';
-      emailVerifyStatus.append('✓ Email verified: ' + email + ' \u00A0');
-      const changeLink = document.createElement('a');
-      changeLink.href = '#';
-      changeLink.textContent = '(change email)';
-      changeLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        resetVerification();
-        emailInput.focus();
-      });
-      emailVerifyStatus.appendChild(changeLink);
-      emailVerifyStatus.hidden = false;
-    } catch (err) {
-      otpStatus.textContent = err.message || 'That code is incorrect or expired. Please try again.';
-    } finally {
-      verifyOtpBtn.disabled = false;
-      verifyOtpBtn.textContent = 'Verify Code';
-    }
-  });
-
-  // ---- Show the chosen filename so people know their upload registered ----
-  if (idProofInput) {
-    idProofInput.addEventListener('change', () => {
-      const file = idProofInput.files[0];
-      if (!file) {
-        idProofSelected.hidden = true;
-        return;
-      }
-      if (file.size > MAX_ID_PROOF_BYTES) {
-        idProofSelected.hidden = true;
-        showError('That ID proof file is too large. Please upload a file under 4 MB.');
-        idProofInput.value = '';
-        return;
-      }
-      clearError();
-      idProofSelected.textContent = 'Selected: ' + file.name;
-      idProofSelected.hidden = false;
-    });
-  }
-
-  // ---- Read the chosen file as a base64 data URL for upload ----
-  function readFileAsBase64(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = () => reject(new Error('Could not read the selected file. Please try again.'));
-      reader.readAsDataURL(file);
-    });
-  }
-
-  function showError(message) {
-    formError.textContent = message;
-    formError.hidden = false;
-  }
-
-  function clearError() {
-    formError.hidden = true;
-    formError.textContent = '';
-  }
-
-  function setLoading(isLoading) {
-    payBtn.disabled = isLoading;
-    payBtn.classList.toggle('is-loading', isLoading);
-  }
-
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    clearError();
-
-    const fee = currentFee();
-    if (!form.reportValidity()) return;
-    if (fee === null) {
-      showError('Please select a registration category.');
-      return;
-    }
-
-    if (categorySelect.value === 'iitr_student') {
-      const emailNow = normalizeEmail(emailInput.value);
-      if (!verifiedToken || !verifiedEmail || verifiedEmail !== emailNow) {
-        // Debug breadcrumb — safe to leave in; only visible in devtools console,
-        // and makes any future mismatch instantly diagnosable instead of a guess.
-        console.warn('[registration] email verification check failed', {
-          hasVerifiedToken: !!verifiedToken,
-          verifiedEmail,
-          emailNow,
-        });
-        showError(`Please verify your @${IITR_DOMAIN} email address (click "Send Code") before proceeding to payment.`);
-        return;
-      }
-    }
-
-    const idProofFile = idProofInput && idProofInput.files[0];
-    if (!idProofFile) {
-      showError('Please upload a photo of your college ID card showing your roll number.');
-      return;
-    }
-    if (idProofFile.size > MAX_ID_PROOF_BYTES) {
-      showError('That ID proof file is too large. Please upload a file under 4 MB.');
-      return;
-    }
-
-    const payload = {
-      fullName: document.getElementById('fullName').value.trim(),
-      email: document.getElementById('email').value.trim(),
-      phone: document.getElementById('phone').value.trim(),
-      institute: document.getElementById('institute').value.trim(),
-      category: categorySelect.value,
-      verifiedToken: categorySelect.value === 'iitr_student' ? verifiedToken : undefined,
-    };
-
-    setLoading(true);
-
-    try {
-      payload.idProofBase64 = await readFileAsBase64(idProofFile);
-      payload.idProofFileName = idProofFile.name;
-      payload.idProofMimeType = idProofFile.type;
-    } catch (err) {
-      setLoading(false);
-      showError(err.message || 'Could not read the ID proof file. Please try again.');
-      return;
-    }
-
-    let order;
-    try {
-      const res = await fetch('/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      order = await res.json();
-      if (!res.ok) throw new Error(order.error || 'Could not start registration. Please try again.');
-    } catch (err) {
-      setLoading(false);
-      showError(err.message || 'Something went wrong starting your registration. Please try again.');
-      return;
-    }
-
-    // ---- Open Razorpay checkout with the order we just created ----
-    const rzp = new Razorpay({
-      key: order.keyId,
-      amount: order.amount,
-      currency: order.currency || 'INR',
-      order_id: order.orderId,
-      name: 'AI for Secure 6G: Foundations of FL, XAI, and LLMs',
-      description: 'Registration fee — ' + categorySelect.options[categorySelect.selectedIndex].text,
-      prefill: {
-        name: payload.fullName,
-        email: payload.email,
-        contact: payload.phone,
-      },
-      theme: { color: '#2563eb' },
-      handler: async function (response) {
-        // Payment succeeded at the gateway — now verify server-side before
-        // treating the registration as confirmed.
-        try {
-          const verifyRes = await fetch('/api/verify', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              email: payload.email,
-            }),
-          });
-          const verifyData = await verifyRes.json();
-          if (!verifyRes.ok || !verifyData.verified) {
-            throw new Error(verifyData.error || 'Payment could not be verified.');
-          }
-
-          document.getElementById('successName').textContent = payload.fullName;
-          document.getElementById('successEmail').textContent = payload.email;
-          document.getElementById('successPaymentId').textContent = response.razorpay_payment_id;
-          form.hidden = true;
-          regSuccess.hidden = false;
-          regSuccess.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } catch (err) {
-          setLoading(false);
-          showError(
-            (err.message || 'We could not verify your payment automatically.') +
-            ' If the amount was debited, please contact us via the Contact page with your payment reference before retrying.'
-          );
-        }
-      },
-      modal: {
-        ondismiss: function () {
-          // User closed the checkout without paying — just re-enable the form.
-          setLoading(false);
-        },
-      },
-    });
-
-    rzp.on('payment.failed', function (response) {
-      setLoading(false);
-      showError('Payment failed: ' + (response.error && response.error.description ? response.error.description : 'please try again.'));
-    });
-
-    setLoading(false);
-    rzp.open();
-  });
-})();
+<script src="js/include.js"></script>
+<script src="js/main.js"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="js/registration.js"></script>
+</body>
+</html>

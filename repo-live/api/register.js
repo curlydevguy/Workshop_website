@@ -55,12 +55,8 @@ module.exports = async function handler(req, res) {
         return;
       }
 
-      // Accept the main domain and any department subdomain, same as
-      // send-otp.js — this must stay in sync with that check or a verified
-      // subdomain email (e.g. @cs.iitr.ac.in) would pass OTP verification
-      // but get rejected here.
       const emailDomain = verified.email.split('@')[1] || '';
-      if (emailDomain !== IITR_DOMAIN && !emailDomain.endsWith('.' + IITR_DOMAIN)) {
+      if (emailDomain !== IITR_DOMAIN) {
         res.status(400).json({
           error: `The IIT Roorkee Student rate requires a verified @${IITR_DOMAIN} email address. Please verify with your institute email, or choose a different category.`,
         });
