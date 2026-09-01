@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register — AI for Secure 6G: Foundations of FL, XAI, and LLMs</title>
+<meta name="description" content="Register for AI for Secure 6G: Foundations of FL, XAI, and LLMs. Fill in your details and pay securely online via Razorpay to confirm your seat.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%232563eb%27/%3E%3Ctext x=%2732%27 y=%2743%27 font-family=%27system-ui,sans-serif%27 font-size=%2730%27 font-weight=%27800%27 fill=%27%23ffffff%27 text-anchor=%27middle%27%3ES6%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/base.css">
+<meta name="view-transition" content="same-origin">
+</head>
+<body data-page="register">
+
+<!-- ============ HEADER INJECTION POINT ============ -->
+<div id="header-placeholder"></div>
+
+<main>
+
+  <!-- ============ HERO SECTION ============ -->
+  <section class="page-hero page-hero-tint">
+    <div class="wrap">
+      <span class="eyebrow">Registration</span>
+      <h1>Register for AI for Secure 6G: Foundations of FL, XAI, and LLMs</h1>
+      <p class="subtitle" style="margin: 0 auto;">Fill in your details, choose your category, and pay securely online. Your seat is confirmed the moment payment is verified — no manual steps, no waiting.</p>
+    </div>
+  </section>
+
+  <!-- ============ SIDE-BY-SIDE LAYOUT ============ -->
+  <section class="section-alt reveal">
+    <div class="wrap details-grid-2">
+
+      <!-- LEFT COLUMN: Instructions (Shaded Panel) -->
+      <div class="panel panel-shade">
+        <div class="section-head">
+          <span class="eyebrow">Instructions</span>
+          <h2>How to register</h2>
+        </div>
+
+        <ol class="step-list" style="font-size: clamp(1.1rem, 1.5vw, 1.35rem); line-height: 1.8; margin-top: 1rem;">
+          <li style="margin-bottom: 1.5rem;">Review the <a href="details.html">workshop details and fee structure</a> to confirm your registration category.</li>
+          <li style="margin-bottom: 1.5rem;">Fill in the form with your details — the fee updates automatically based on your category.</li>
+          <li style="margin-bottom: 1.5rem;">Click <strong>Proceed to Payment</strong> and complete payment securely via Razorpay (cards, UPI, netbanking).</li>
+          <li>Your registration is confirmed instantly once payment succeeds — no receipt upload, no waiting for manual verification.</li>
+        </ol>
+
+        <div class="note-box" style="margin-top: 3rem; background: var(--white);">
+          <strong>Secure payments.</strong> All payments are processed by Razorpay. We never see or store your card, UPI, or banking details.
+        </div>
+
+        <div class="note-box" style="margin-top: 1.5rem; background: var(--white);">
+          <strong>Need help?</strong> If you experience any issues during payment or registration, please reach out via the <a href="contact.html">Contact page</a> and include the reference ID shown after payment, if you have one.
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: The Form (White Panel) -->
+      <div class="panel">
+        <div class="section-head">
+          <span class="eyebrow">Registration Form</span>
+          <h2>Participant details</h2>
+        </div>
+
+        <!-- ============ FORM STATE ============ -->
+        <form id="regForm" class="reg-form" novalidate>
+
+          <div class="form-grid-2">
+            <div class="form-row">
+              <label for="fullName">Full Name</label>
+              <input type="text" id="fullName" name="fullName" required autocomplete="name">
+            </div>
+            <div class="form-row">
+              <label for="email">Email Address</label>
+              <input type="email" id="email" name="email" required autocomplete="email">
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-row">
+              <label for="phone">Phone Number</label>
+              <input type="tel" id="phone" name="phone" required autocomplete="tel">
+            </div>
+            <div class="form-row">
+              <label for="institute">Institute / Organization</label>
+              <input type="text" id="institute" name="institute" required autocomplete="organization">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label for="category">Registration Category</label>
+            <select id="category" name="category" required>
+              <option value="">Select your category...</option>
+              <option value="iitr_student" data-fee="500">IIT Roorkee Student / Scholar — ₹500</option>
+              <option value="other_student" data-fee="1000">Other Institute Student / Scholar / Faculty — ₹1000</option>
+              <option value="industry" data-fee="2000">Industry Professional / Others — ₹2000</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <label for="idProof">College ID Card Photo (showing your Roll No.)</label>
+            <input type="file" id="idProof" name="idProof" accept="image/*,.pdf" required>
+            <span class="field-hint">Upload a clear photo or scan of your college ID card — your roll number must be visible. JPG, PNG, or PDF, max 4 MB.</span>
+            <span class="file-selected" id="idProofSelected" hidden></span>
+          </div>
+
+          <!-- ============ FEE SUMMARY (updates live) ============ -->
+          <div class="fee-summary" id="feeSummary" hidden>
+            <span class="fee-summary-label">Amount payable</span>
+            <span class="fee-summary-amount" id="feeSummaryAmount">₹0</span>
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="payBtn" style="margin-top: 0.5rem; width: 100%; font-size: 1.1rem; padding: 1rem;">
+            Proceed to Payment
+          </button>
+
+          <div class="form-error" id="formError" hidden></div>
+
+          <div class="form-submit-note">
+            Please double-check your email — your registration confirmation and any workshop updates will be sent there.
+          </div>
+
+        </form>
+
+        <!-- ============ SUCCESS STATE (shown after verified payment) ============ -->
+        <div class="reg-success" id="regSuccess" hidden>
+          <div class="reg-success-icon">✓</div>
+          <h3>Registration confirmed</h3>
+          <p>Thanks, <span id="successName">there</span> — your payment has been verified and your seat for AI for Secure 6G: Foundations of FL, XAI, and LLMs is confirmed. A confirmation has been noted against <span id="successEmail">your email</span>.</p>
+          <p class="reg-success-id">Payment reference: <span id="successPaymentId">—</span></p>
+          <a class="btn btn-ghost" href="index.html">Back to home</a>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-top">
+      <div class="footer-address">
+        <h3 class="footer-heading">Contact Us</h3>
+        <p>Department of Computer Science and Engineering,</p>
+        <p>Indian Institute of Technology,</p>
+        <p>Roorkee &ndash; 247667,</p>
+        <p>Uttarakhand, India</p>
+        <p class="footer-phone">Phone: <a href="tel:+911332285582">+91-1332-285582</a></p>
+        <p class="footer-phone">Email: <a href="mailto:csed@iitr.ac.in">csed@iitr.ac.in</a></p>
+      </div>
+      <div class="footer-map-wrap">
+        <div class="footer-map-frame">
+          <a class="footer-map-open" href="https://www.google.com/maps/search/?api=1&query=IIT+Roorkee" target="_blank" rel="noopener">Open in Maps ↗</a>
+          <iframe
+            src="https://www.google.com/maps?q=29.866932819020487,77.88688626753348&output=embed"
+            allowfullscreen="" loading="lazy"></iframe>
+        </div>
+        <a class="footer-directions-btn" href="https://www.google.com/maps/dir/?api=1&destination=IIT+Roorkee" target="_blank" rel="noopener">Get Directions</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="js/include.js"></script>
+<script src="js/main.js"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="js/registration.js"></script>
+</body>
+</html>
