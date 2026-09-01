@@ -16,7 +16,139 @@
   const idProofInput = document.getElementById('idProof');
   const idProofSelected = document.getElementById('idProofSelected');
 
+  const emailInput = document.getElementById('email');
+  const iitrVerifyBlock = document.getElementById('iitrVerifyBlock');
+  const iitrEmailInput = document.getElementById('iitrEmail');
+  const sendOtpBtn = document.getElementById('sendOtpBtn');
+  const emailVerifyStatus = document.getElementById('emailVerifyStatus');
+  const otpRow = document.getElementById('otpRow');
+  const otpInput = document.getElementById('otpInput');
+  const verifyOtpBtn = document.getElementById('verifyOtpBtn');
+  const otpStatus = document.getElementById('otpStatus');
+  const resendOtpLink = document.getElementById('resendOtpLink');
+
   const MAX_ID_PROOF_BYTES = 4 * 1024 * 1024; // 4 MB — keep serverless request bodies small
+
+  // ---- Email verification state (only relevant for the iitr_student category) ----
+  // challengeToken: proof a code was sent, needed to check what the user types back
+  // verifiedToken: proof the email was actually confirmed, sent along at final submit
+  let challengeToken = null;
+  let verifiedToken = null;
+  let verifiedEmail = null; // the exact @iitr.ac.in email the verifiedToken belongs to
+
+  function resetVerification() {
+    verifiedToken = null;
+    verifiedEmail = null;
+    challengeToken = null;
+    otpRow.hidden = true;
+    otpInput.value = '';
+    emailVerifyStatus.hidden = true;
+    sendOtpBtn.disabled = false;
+    sendOtpBtn.textContent = 'Send Code';
+  }
+
+  // Show/hide the IITR verification block based on the selected category.
+  categorySelect.addEventListener('change', () => {
+    if (categorySelect.value === 'iitr_student') {
+      iitrVerifyBlock.hidden = false;
+    } else {
+      iitrVerifyBlock.hidden = true;
+      resetVerification();
+      iitrEmailInput.value = '';
+    }
+  });
+
+  // Any change to the IITR email after verifying invalidates that verification —
+  // otherwise someone could verify a@iitr.ac.in then edit the field to b@x.com.
+  iitrEmailInput.addEventListener('input', () => {
+    if (verifiedEmail && iitrEmailInput.value.trim().toLowerCase() !== verifiedEmail) {
+      resetVerification();
+    }
+  });
+
+  async function requestOtp() {
+    const email = iitrEmailInput.value.trim();
+    if (!email || !iitrEmailInput.checkValidity()) {
+      showError('Please enter a valid email address before requesting a code.');
+      iitrEmailInput.focus();
+      return;
+    }
+    if (!email.toLowerCase().endsWith('@iitr.ac.in')) {
+      showError('The verification code can only be sent to an @iitr.ac.in email address.');
+      iitrEmailInput.focus();
+      return;
+    }
+
+    sendOtpBtn.disabled = true;
+    sendOtpBtn.textContent = 'Sending...';
+    clearError();
+
+    try {
+      const res = await fetch('/api/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Could not send the verification code.');
+
+      challengeToken = data.challengeToken;
+      otpRow.hidden = false;
+      otpStatus.textContent = 'Code sent — check your inbox (and spam folder).';
+      otpInput.focus();
+      sendOtpBtn.textContent = 'Code Sent';
+    } catch (err) {
+      showError(err.message || 'Could not send the verification code. Please try again.');
+      sendOtpBtn.disabled = false;
+      sendOtpBtn.textContent = 'Send Code';
+    }
+  }
+
+  sendOtpBtn.addEventListener('click', requestOtp);
+  resendOtpLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    requestOtp();
+  });
+
+  verifyOtpBtn.addEventListener('click', async () => {
+    const email = iitrEmailInput.value.trim();
+    const otp = otpInput.value.trim();
+
+    if (!challengeToken) {
+      otpStatus.textContent = 'Please request a code first.';
+      return;
+    }
+    if (!otp) {
+      otpStatus.textContent = 'Please enter the code from your email.';
+      return;
+    }
+
+    verifyOtpBtn.disabled = true;
+    verifyOtpBtn.textContent = 'Verifying...';
+
+    try {
+      const res = await fetch('/api/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp, challengeToken }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.verified) throw new Error(data.error || 'That code is incorrect or expired.');
+
+      verifiedToken = data.verifiedToken;
+      verifiedEmail = email.toLowerCase();
+      otpStatus.textContent = '';
+      emailVerifyStatus.textContent = '✓ Email verified: ' + email;
+      emailVerifyStatus.hidden = false;
+      otpRow.hidden = true;
+      sendOtpBtn.textContent = 'Verified ✓';
+    } catch (err) {
+      otpStatus.textContent = err.message || 'That code is incorrect or expired. Please try again.';
+    } finally {
+      verifyOtpBtn.disabled = false;
+      verifyOtpBtn.textContent = 'Verify Code';
+    }
+  });
 
   // ---- Show the chosen filename so people know their upload registered ----
   if (idProofInput) {
@@ -91,6 +223,14 @@
       return;
     }
 
+    if (categorySelect.value === 'iitr_student') {
+      const iitrEmailNow = iitrEmailInput.value.trim().toLowerCase();
+      if (!verifiedToken || verifiedEmail !== iitrEmailNow) {
+        showError('Please verify your @iitr.ac.in email address (click "Send Code") before proceeding to payment.');
+        return;
+      }
+    }
+
     const idProofFile = idProofInput && idProofInput.files[0];
     if (!idProofFile) {
       showError('Please upload a photo of your college ID card showing your roll number.');
@@ -107,6 +247,7 @@
       phone: document.getElementById('phone').value.trim(),
       institute: document.getElementById('institute').value.trim(),
       category: categorySelect.value,
+      verifiedToken: categorySelect.value === 'iitr_student' ? verifiedToken : undefined,
     };
 
     setLoading(true);

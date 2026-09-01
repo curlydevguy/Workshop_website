@@ -8,6 +8,7 @@
 const Razorpay = require('razorpay');
 const { appendRegistrationRow } = require('./sheets');
 const { uploadIdProof } = require('./drive');
+const { readVerifiedToken } = require('./otp');
 
 // Keep this in sync with the <option data-fee="..."> values in register.html
 // and the fee table on details.html.
@@ -16,6 +17,8 @@ const FEES = {
   other_student: 1000,
   industry: 2000,
 };
+
+const IITR_DOMAIN = 'iitr.ac.in';
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -29,7 +32,7 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const { fullName, email, phone, institute, category, idProofBase64, idProofFileName } = req.body || {};
+    const { fullName, email, phone, institute, category, idProofBase64, idProofFileName, verifiedToken } = req.body || {};
 
     if (!fullName || !email || !phone || !institute || !category) {
       res.status(400).json({ error: 'Please fill in every field before continuing.' });
@@ -41,7 +44,29 @@ module.exports = async function handler(req, res) {
       return;
     }
 
-    const amount = FEES[category];
+    // Only the IITR-student discount tier needs a verified email — other
+    // categories are self-declared, same as before this feature existed.
+    let finalCategory = category;
+
+    if (category === 'iitr_student') {
+      const verified = verifiedToken ? readVerifiedToken(verifiedToken) : null;
+      if (!verified || verified.email !== email.toLowerCase()) {
+        res.status(400).json({ error: 'Please verify your @iitr.ac.in email address before completing registration.' });
+        return;
+      }
+
+      const emailDomain = verified.email.split('@')[1] || '';
+      if (emailDomain !== IITR_DOMAIN) {
+        res.status(400).json({
+          error: `The IIT Roorkee Student rate requires a verified @${IITR_DOMAIN} email address. Please verify with your institute email, or choose a different category.`,
+        });
+        return;
+      }
+
+      finalCategory = 'iitr_student';
+    }
+
+    const amount = FEES[finalCategory];
     if (!amount) {
       res.status(400).json({ error: 'Invalid registration category.' });
       return;
@@ -52,7 +77,7 @@ module.exports = async function handler(req, res) {
       amount: amount * 100,
       currency: 'INR',
       // Order IDs are already unique, so this doubles as our sheet row key.
-      notes: { fullName, email, phone, institute, category },
+      notes: { fullName, email, phone, institute, category: finalCategory },
     });
 
     // Upload the ID proof to Drive before logging the row, so the sheet can
@@ -74,7 +99,7 @@ module.exports = async function handler(req, res) {
         email,
         phone,
         institute,
-        category,
+        finalCategory,
         amount,
         order.id,      // PaymentID column temporarily holds the order_id
         'pending',

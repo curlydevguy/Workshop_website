@@ -94,6 +94,27 @@
             </select>
           </div>
 
+          <!-- ============ IITR EMAIL VERIFICATION (only shown for the discount tier) ============ -->
+          <div class="form-row" id="iitrVerifyBlock" hidden>
+            <label for="iitrEmail">IIT Roorkee Email (@iitr.ac.in)</label>
+            <span class="field-hint">The ₹500 rate requires a verified @iitr.ac.in email address.</span>
+            <div style="display:flex; gap:0.5rem; align-items:center; margin-top:0.35rem;">
+              <input type="email" id="iitrEmail" placeholder="yourname@iitr.ac.in" style="flex:1;">
+              <button type="button" id="sendOtpBtn" class="btn btn-secondary" style="white-space:nowrap;">Send Code</button>
+            </div>
+            <span class="field-hint" id="emailVerifyStatus" hidden></span>
+
+            <div id="otpRow" hidden style="margin-top:0.75rem;">
+              <label for="otpInput">Enter the 6-digit code sent to your email</label>
+              <div style="display:flex; gap:0.5rem; align-items:center;">
+                <input type="text" id="otpInput" inputmode="numeric" pattern="[0-9]*" maxlength="6" style="flex:1;" placeholder="123456">
+                <button type="button" id="verifyOtpBtn" class="btn btn-secondary" style="white-space:nowrap;">Verify Code</button>
+              </div>
+              <span class="field-hint" id="otpStatus"></span>
+              <span class="field-hint"><a href="#" id="resendOtpLink">Resend code</a></span>
+            </div>
+          </div>
+
           <div class="form-row">
             <label for="idProof">College ID Card Photo (showing your Roll No.)</label>
             <input type="file" id="idProof" name="idProof" accept="image/*,.pdf" required>

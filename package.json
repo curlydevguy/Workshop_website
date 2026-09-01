@@ -5,6 +5,7 @@
   "description": "AI for Secure 6G: Foundations of FL, XAI, and LLMs — registration site with Razorpay + Google Sheets backend",
   "dependencies": {
     "googleapis": "^176.0.0",
+    "nodemailer": "^6.9.15",
     "razorpay": "^2.9.4"
   }
 }
