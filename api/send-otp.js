@@ -4,15 +4,20 @@
 // "challengeToken" the frontend must send back to /api/verify-otp along
 // with whatever code the user typed in.
 //
-// Only @iitr.ac.in addresses are accepted — this endpoint exists purely to
-// gate the IITR-student discount, so there's no reason to OTP-verify anyone
-// else's email.
+// Accepts any @iitr.ac.in address, including department subdomains like
+// @cs.iitr.ac.in, @ma.iitr.ac.in, etc. — covers students, faculty, and
+// researchers across all IITR departments.
 
 const { generateOtp, createChallengeToken } = require('./otp');
 const { sendOtpEmail } = require('./mailer');
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const IITR_DOMAIN = 'iitr.ac.in';
+
+function isIitrEmail(email) {
+  const domain = email.toLowerCase().split('@')[1] || '';
+  return domain === IITR_DOMAIN || domain.endsWith('.' + IITR_DOMAIN);
+}
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -28,8 +33,8 @@ module.exports = async function handler(req, res) {
       return;
     }
 
-    if (!email.toLowerCase().endsWith('@' + IITR_DOMAIN)) {
-      res.status(400).json({ error: `Only @${IITR_DOMAIN} email addresses can be verified for the IIT Roorkee Student rate.` });
+    if (!isIitrEmail(email)) {
+      res.status(400).json({ error: `Only @${IITR_DOMAIN} email addresses (including department subdomains) can be verified for the IIT Roorkee rate.` });
       return;
     }
 
@@ -44,4 +49,3 @@ module.exports = async function handler(req, res) {
     res.status(500).json({ error: 'Could not send the verification code. Please try again in a moment.' });
   }
 };
-

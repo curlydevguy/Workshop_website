@@ -94,12 +94,10 @@
             </select>
           </div>
 
-          <!-- ============ IITR EMAIL VERIFICATION (only shown for the discount tier) ============ -->
+          <!-- ============ IITR EMAIL VERIFICATION (auto-shown when the Email Address above is an @iitr.ac.in address) ============ -->
           <div class="form-row" id="iitrVerifyBlock" hidden>
-            <label for="iitrEmail">IIT Roorkee Email (@iitr.ac.in)</label>
-            <span class="field-hint">The ₹500 rate requires a verified @iitr.ac.in email address.</span>
+            <span class="field-hint">We detected an IIT Roorkee email address — verify it below to unlock the ₹500 rate.</span>
             <div style="display:flex; gap:0.5rem; align-items:center; margin-top:0.35rem;">
-              <input type="email" id="iitrEmail" placeholder="yourname@iitr.ac.in" style="flex:1;">
               <button type="button" id="sendOtpBtn" class="btn btn-secondary" style="white-space:nowrap;">Send Code</button>
             </div>
             <span class="field-hint" id="emailVerifyStatus" hidden></span>

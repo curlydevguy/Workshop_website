@@ -18,7 +18,6 @@
 
   const emailInput = document.getElementById('email');
   const iitrVerifyBlock = document.getElementById('iitrVerifyBlock');
-  const iitrEmailInput = document.getElementById('iitrEmail');
   const sendOtpBtn = document.getElementById('sendOtpBtn');
   const emailVerifyStatus = document.getElementById('emailVerifyStatus');
   const otpRow = document.getElementById('otpRow');
@@ -28,13 +27,23 @@
   const resendOtpLink = document.getElementById('resendOtpLink');
 
   const MAX_ID_PROOF_BYTES = 4 * 1024 * 1024; // 4 MB — keep serverless request bodies small
+  const IITR_DOMAIN = 'iitr.ac.in';
 
-  // ---- Email verification state (only relevant for the iitr_student category) ----
+  // Accepts the main domain and any department subdomain:
+  // someone@iitr.ac.in, someone@cs.iitr.ac.in, someone@ma.iitr.ac.in, etc.
+  // Covers students, faculty, and researchers across all IITR departments.
+  function isIitrEmail(email) {
+    const domain = (email.split('@')[1] || '').toLowerCase();
+    return domain === IITR_DOMAIN || domain.endsWith('.' + IITR_DOMAIN);
+  }
+
+  // ---- Email verification state (only relevant for @iitr.ac.in addresses) ----
   // challengeToken: proof a code was sent, needed to check what the user types back
   // verifiedToken: proof the email was actually confirmed, sent along at final submit
   let challengeToken = null;
   let verifiedToken = null;
-  let verifiedEmail = null; // the exact @iitr.ac.in email the verifiedToken belongs to
+  let verifiedEmail = null; // the exact IITR email the verifiedToken belongs to
+  let autoSelectedCategory = false; // true if we auto-picked "iitr_student" for them
 
   function resetVerification() {
     verifiedToken = null;
@@ -45,37 +54,79 @@
     emailVerifyStatus.hidden = true;
     sendOtpBtn.disabled = false;
     sendOtpBtn.textContent = 'Send Code';
+    otpStatus.textContent = '';
   }
 
-  // Show/hide the IITR verification block based on the selected category.
-  categorySelect.addEventListener('change', () => {
-    if (categorySelect.value === 'iitr_student') {
+  function currentFee() {
+    const opt = categorySelect.options[categorySelect.selectedIndex];
+    const fee = opt ? Number(opt.dataset.fee) : NaN;
+    return Number.isFinite(fee) ? fee : null;
+  }
+
+  function updateFeeSummary() {
+    const fee = currentFee();
+    if (fee === null) {
+      feeSummary.hidden = true;
+      return;
+    }
+    feeSummaryAmount.textContent = '₹' + fee.toLocaleString('en-IN');
+    feeSummary.hidden = false;
+  }
+
+  // ---- Core: react to the email field, live ----
+  function handleEmailChange() {
+    const email = emailInput.value.trim();
+    const iitr = email && isIitrEmail(email);
+
+    if (iitr) {
       iitrVerifyBlock.hidden = false;
+
+      // Auto-select the IITR rate if the user hasn't manually chosen a
+      // different category themselves.
+      if (!categorySelect.value || autoSelectedCategory) {
+        categorySelect.value = 'iitr_student';
+        autoSelectedCategory = true;
+        updateFeeSummary();
+      }
+
+      // If they'd verified a different email earlier, that verification
+      // no longer applies to what's currently typed.
+      if (verifiedEmail && email.toLowerCase() !== verifiedEmail) {
+        resetVerification();
+      }
     } else {
       iitrVerifyBlock.hidden = true;
       resetVerification();
-      iitrEmailInput.value = '';
-    }
-  });
 
-  // Any change to the IITR email after verifying invalidates that verification —
-  // otherwise someone could verify a@iitr.ac.in then edit the field to b@x.com.
-  iitrEmailInput.addEventListener('input', () => {
-    if (verifiedEmail && iitrEmailInput.value.trim().toLowerCase() !== verifiedEmail) {
-      resetVerification();
+      // Only clear an auto-selected category — never touch a category the
+      // user picked manually themselves.
+      if (autoSelectedCategory) {
+        categorySelect.value = '';
+        autoSelectedCategory = false;
+        updateFeeSummary();
+      }
     }
+  }
+
+  emailInput.addEventListener('input', handleEmailChange);
+
+  // If the user manually changes the category themselves, it's no longer
+  // "auto-selected" — don't clobber their choice later.
+  categorySelect.addEventListener('change', () => {
+    autoSelectedCategory = false;
+    updateFeeSummary();
   });
 
   async function requestOtp() {
-    const email = iitrEmailInput.value.trim();
-    if (!email || !iitrEmailInput.checkValidity()) {
+    const email = emailInput.value.trim();
+    if (!email || !emailInput.checkValidity()) {
       showError('Please enter a valid email address before requesting a code.');
-      iitrEmailInput.focus();
+      emailInput.focus();
       return;
     }
-    if (!email.toLowerCase().endsWith('@iitr.ac.in')) {
-      showError('The verification code can only be sent to an @iitr.ac.in email address.');
-      iitrEmailInput.focus();
+    if (!isIitrEmail(email)) {
+      showError(`The verification code can only be sent to an @${IITR_DOMAIN} email address.`);
+      emailInput.focus();
       return;
     }
 
@@ -111,7 +162,7 @@
   });
 
   verifyOtpBtn.addEventListener('click', async () => {
-    const email = iitrEmailInput.value.trim();
+    const email = emailInput.value.trim();
     const otp = otpInput.value.trim();
 
     if (!challengeToken) {
@@ -180,23 +231,6 @@
     });
   }
 
-  // ---- Live fee display, driven by the selected option's data-fee ----
-  function currentFee() {
-    const opt = categorySelect.options[categorySelect.selectedIndex];
-    const fee = opt ? Number(opt.dataset.fee) : NaN;
-    return Number.isFinite(fee) ? fee : null;
-  }
-
-  categorySelect.addEventListener('change', () => {
-    const fee = currentFee();
-    if (fee === null) {
-      feeSummary.hidden = true;
-      return;
-    }
-    feeSummaryAmount.textContent = '₹' + fee.toLocaleString('en-IN');
-    feeSummary.hidden = false;
-  });
-
   function showError(message) {
     formError.textContent = message;
     formError.hidden = false;
@@ -224,9 +258,9 @@
     }
 
     if (categorySelect.value === 'iitr_student') {
-      const iitrEmailNow = iitrEmailInput.value.trim().toLowerCase();
-      if (!verifiedToken || verifiedEmail !== iitrEmailNow) {
-        showError('Please verify your @iitr.ac.in email address (click "Send Code") before proceeding to payment.');
+      const emailNow = emailInput.value.trim().toLowerCase();
+      if (!verifiedToken || verifiedEmail !== emailNow) {
+        showError(`Please verify your @${IITR_DOMAIN} email address (click "Send Code") before proceeding to payment.`);
         return;
       }
     }
