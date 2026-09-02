@@ -556,6 +556,7 @@ h1, h2, h3 { color: var(--text-dark); line-height: 1.2; }
 .reg-form { display: flex; flex-direction: column; gap: 1.5rem; }
 .form-grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; }
 .form-row { display: flex; flex-direction: column; gap: 0.5rem; }
+.form-row[hidden] { display: none; }
 .form-row label { font-weight: 600; font-size: 0.9rem; color: #374151; }
 .form-row input, .form-row select, .form-row textarea {
   padding: 0.75rem; border: 1px solid #d1d5db; border-radius: var(--radius-sm); font-size: 1rem; width: 100%;
