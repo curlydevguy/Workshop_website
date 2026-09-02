@@ -629,6 +629,10 @@ h1, h2, h3 { color: var(--text-dark); line-height: 1.2; }
   font-size: 0.85rem;
   text-decoration: underline;
 }
+#idProofCheckStatus { display: block; margin-top: 0.4rem; }
+#idProofCheckStatus.is-checking { color: var(--text-soft); }
+#idProofCheckStatus.is-ok { color: #15803d; font-weight: 600; }
+#idProofCheckStatus.is-warn { color: #b45309; font-weight: 600; }
 .form-submit-note {
   font-size: 0.85rem; color: var(--text-main); background: #eff6ff; padding: 1rem;
   border-radius: var(--radius-sm); border-left: 4px solid #3b82f6; margin-top: 0.5rem;

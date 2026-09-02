@@ -19,6 +19,7 @@
   const idProofEmpty = document.getElementById('idProofEmpty');
   const idProofFilled = document.getElementById('idProofFilled');
   const idProofFileName = document.getElementById('idProofFileName');
+  const idProofCheckStatus = document.getElementById('idProofCheckStatus');
 
   const instituteInput = document.getElementById('institute');
   const emailInput = document.getElementById('email');
@@ -50,6 +51,7 @@
   let verifiedEmail = null; // the exact IITR email the verifiedToken belongs to
   let autoSelectedCategory = false; // true if we auto-picked "iitr_student" for them
   let autoSelectedInstitute = false; // true if we auto-filled "IIT Roorkee" for them
+  let idProofAiCheck = null; // { isValidId, reason } from /api/check-id-proof — advisory only, never blocks
 
   function resetVerification() {
     verifiedToken = null;
@@ -71,6 +73,9 @@
     idProofEmpty.hidden = false;
     idProofFilled.hidden = true;
     idProofDrop.classList.remove('has-file');
+    idProofCheckStatus.hidden = true;
+    idProofCheckStatus.className = '';
+    idProofAiCheck = null;
   }
 
   function currentFee() {
@@ -275,7 +280,55 @@
       idProofEmpty.hidden = true;
       idProofFilled.hidden = false;
       idProofDrop.classList.add('has-file');
+
+      runIdProofCheck(file);
     });
+  }
+
+  // ---- Advisory AI check: does this actually look like an ID card? ----
+  // Runs automatically the moment a file is selected. Never blocks the
+  // form — just shows a hint and tags the result for the admin to see in
+  // the sheet later.
+  async function runIdProofCheck(file) {
+    idProofAiCheck = null;
+    idProofCheckStatus.hidden = false;
+    idProofCheckStatus.className = 'is-checking';
+    idProofCheckStatus.textContent = 'Checking your ID card...';
+
+    let base64;
+    try {
+      base64 = await readFileAsBase64(file);
+    } catch (err) {
+      idProofCheckStatus.hidden = true;
+      return; // the actual submit-time read will surface this error properly
+    }
+
+    try {
+      const res = await fetch('/api/check-id-proof', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageBase64: base64, mimeType: file.type }),
+      });
+      const data = await res.json();
+      idProofAiCheck = { isValidId: data.isValidId, reason: data.reason };
+
+      if (data.isValidId === true) {
+        idProofCheckStatus.className = 'is-ok';
+        idProofCheckStatus.textContent = '✓ Looks like a valid ID card';
+      } else if (data.isValidId === false) {
+        idProofCheckStatus.className = 'is-warn';
+        idProofCheckStatus.textContent = "⚠ This doesn't look like a clear ID card — you can still submit, but a blurry or wrong photo may need manual review.";
+      } else {
+        // isValidId === null: the check itself couldn't run (key missing,
+        // API hiccup, etc). Never blocks submission, but DO show it — a
+        // quiet failure here is otherwise invisible and impossible to debug.
+        idProofCheckStatus.className = 'is-checking';
+        idProofCheckStatus.textContent = 'Automatic check unavailable right now (' + (data.reason || 'unknown reason') + ') — you can still submit normally.';
+      }
+    } catch (err) {
+      idProofCheckStatus.className = 'is-checking';
+      idProofCheckStatus.textContent = 'Automatic check unavailable right now (could not reach the check endpoint) — you can still submit normally.';
+    }
   }
 
   // ---- Read the chosen file as a base64 data URL for upload ----
@@ -340,6 +393,10 @@
       institute: document.getElementById('institute').value.trim(),
       category: categorySelect.value,
       verifiedToken: categorySelect.value === 'iitr_student' ? verifiedToken : undefined,
+      // Advisory only — the backend never rejects on this, it's just logged
+      // to the sheet so a human can spot-check flagged uploads.
+      idProofAiCheckResult: idProofAiCheck === null ? 'not_checked' : (idProofAiCheck.isValidId ? 'looks_valid' : 'flagged'),
+      idProofAiCheckReason: idProofAiCheck ? idProofAiCheck.reason : '',
     };
 
     setLoading(true);

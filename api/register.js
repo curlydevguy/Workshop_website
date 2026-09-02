@@ -32,7 +32,7 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const { fullName, email, phone, institute, category, idProofBase64, idProofFileName, verifiedToken } = req.body || {};
+    const { fullName, email, phone, institute, category, idProofBase64, idProofFileName, verifiedToken, idProofAiCheckResult, idProofAiCheckReason } = req.body || {};
 
     if (!fullName || !email || !phone || !institute || !category) {
       res.status(400).json({ error: 'Please fill in every field before continuing.' });
@@ -122,6 +122,8 @@ module.exports = async function handler(req, res) {
         order.id,      // PaymentID column temporarily holds the order_id
         'pending',
         idProofLink,
+        idProofAiCheckResult || 'not_checked', // K — advisory only, never blocks
+        idProofAiCheckReason || '',            // L
       ]);
     } catch (sheetErr) {
       console.error('Sheet insert failed:', sheetErr);

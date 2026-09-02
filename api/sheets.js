@@ -19,13 +19,16 @@ function getAuth() {
 // Adds one new row with status "pending".
 async function appendRegistrationRow(rowData) {
   // rowData order must match the sheet headers exactly:
-  // [Timestamp, Name, Email, Phone, Institution, Category, Amount, PaymentID, Status, ID Proof Link]
+  // [Timestamp, Name, Email, Phone, Institution, Category, Amount, PaymentID, Status, ID Proof Link, AI Check Result, AI Check Reason]
+  // Add "AI Check Result" and "AI Check Reason" as headers in columns K/L
+  // of the sheet if they aren't there yet — this is advisory logging only,
+  // it never blocks a registration.
   const auth = getAuth();
   const sheets = google.sheets({ version: "v4", auth });
 
   await sheets.spreadsheets.values.append({
     spreadsheetId: process.env.GOOGLE_SHEET_ID,
-    range: "Registrations!A:J",
+    range: "Registrations!A:L",
     valueInputOption: "USER_ENTERED",
     insertDataOption: "INSERT_ROWS",
     requestBody: {
