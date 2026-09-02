@@ -96,8 +96,7 @@
 
           <!-- ============ IITR EMAIL VERIFICATION (auto-shown when the Email Address above is an @iitr.ac.in address) ============ -->
           <div class="form-row" id="iitrVerifyBlock" hidden>
-            <span class="field-hint">We detected an IIT Roorkee email address — verify it below to unlock the ₹500 rate.</span>
-            <div style="display:flex; gap:0.5rem; align-items:center; margin-top:0.35rem;">
+            <div style="display:flex; gap:0.5rem; align-items:center;">
               <button type="button" id="sendOtpBtn" class="btn btn-secondary" style="white-space:nowrap;">Send Code</button>
             </div>
             <span class="field-hint" id="emailVerifyStatus" hidden></span>
@@ -113,9 +112,10 @@
             </div>
           </div>
 
-          <div class="form-row">
+          <!-- ============ COLLEGE ID CARD (auto-shown alongside the IITR verification block above) ============ -->
+          <div class="form-row" id="idProofRow" hidden>
             <label for="idProof">College ID Card Photo (showing your Roll No.)</label>
-            <input type="file" id="idProof" name="idProof" accept="image/*,.pdf" required>
+            <input type="file" id="idProof" name="idProof" accept="image/*,.pdf">
             <span class="field-hint">Upload a clear photo or scan of your college ID card — your roll number must be visible. JPG, PNG, or PDF, max 4 MB.</span>
             <span class="file-selected" id="idProofSelected" hidden></span>
           </div>

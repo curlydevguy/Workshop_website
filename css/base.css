@@ -565,7 +565,15 @@ h1, h2, h3 { color: var(--text-dark); line-height: 1.2; }
 .form-row input:focus, .form-row select:focus, .form-row textarea:focus {
   border-color: var(--primary-blue); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
-.form-row select { background: var(--white); cursor: pointer; }
+.form-row select {
+  background: var(--white); cursor: pointer;
+  -webkit-appearance: none; -moz-appearance: none; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23374151' stroke-width='2'%3E%3Cpath d='M5 7.5L10 12.5L15 7.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 0.85rem center; background-size: 1rem;
+  padding-right: 2.5rem; color: var(--text-main, #1f2937);
+}
+.form-row select:required:invalid { color: var(--text-soft); }
+.form-row select option { color: var(--text-main, #1f2937); }
 .form-row textarea { resize: vertical; }
 .form-row input[type="file"] { border: 1px dashed #9ca3af; background: var(--gray-light); cursor: pointer; }
 .form-row .field-hint { font-size: 0.8rem; color: var(--text-soft); }

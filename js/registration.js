@@ -15,6 +15,7 @@
   const regSuccess = document.getElementById('regSuccess');
   const idProofInput = document.getElementById('idProof');
   const idProofSelected = document.getElementById('idProofSelected');
+  const idProofRow = document.getElementById('idProofRow');
 
   const emailInput = document.getElementById('email');
   const iitrVerifyBlock = document.getElementById('iitrVerifyBlock');
@@ -57,6 +58,12 @@
     otpStatus.textContent = '';
   }
 
+  function clearIdProof() {
+    idProofInput.value = '';
+    idProofSelected.hidden = true;
+    idProofSelected.textContent = '';
+  }
+
   function currentFee() {
     const opt = categorySelect.options[categorySelect.selectedIndex];
     const fee = opt ? Number(opt.dataset.fee) : NaN;
@@ -74,12 +81,17 @@
   }
 
   // ---- Core: react to the email field, live ----
+  // The "Send Code" verification block and the College ID Card upload are
+  // both only relevant to IITR members (they exist to unlock/prove the
+  // ₹500 student rate) — so they always show or hide together.
   function handleEmailChange() {
     const email = emailInput.value.trim();
     const iitr = email && isIitrEmail(email);
 
     if (iitr) {
       iitrVerifyBlock.hidden = false;
+      idProofRow.hidden = false;
+      idProofInput.required = true;
 
       // Auto-select the IITR rate if the user hasn't manually chosen a
       // different category themselves.
@@ -96,7 +108,10 @@
       }
     } else {
       iitrVerifyBlock.hidden = true;
+      idProofRow.hidden = true;
+      idProofInput.required = false;
       resetVerification();
+      clearIdProof();
 
       // Only clear an auto-selected category — never touch a category the
       // user picked manually themselves.
@@ -266,11 +281,12 @@
     }
 
     const idProofFile = idProofInput && idProofInput.files[0];
-    if (!idProofFile) {
+    const idProofNeeded = !idProofRow.hidden;
+    if (idProofNeeded && !idProofFile) {
       showError('Please upload a photo of your college ID card showing your roll number.');
       return;
     }
-    if (idProofFile.size > MAX_ID_PROOF_BYTES) {
+    if (idProofFile && idProofFile.size > MAX_ID_PROOF_BYTES) {
       showError('That ID proof file is too large. Please upload a file under 4 MB.');
       return;
     }
@@ -286,14 +302,16 @@
 
     setLoading(true);
 
-    try {
-      payload.idProofBase64 = await readFileAsBase64(idProofFile);
-      payload.idProofFileName = idProofFile.name;
-      payload.idProofMimeType = idProofFile.type;
-    } catch (err) {
-      setLoading(false);
-      showError(err.message || 'Could not read the ID proof file. Please try again.');
-      return;
+    if (idProofFile) {
+      try {
+        payload.idProofBase64 = await readFileAsBase64(idProofFile);
+        payload.idProofFileName = idProofFile.name;
+        payload.idProofMimeType = idProofFile.type;
+      } catch (err) {
+        setLoading(false);
+        showError(err.message || 'Could not read the ID proof file. Please try again.');
+        return;
+      }
     }
 
     let order;
