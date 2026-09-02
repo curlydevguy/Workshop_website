@@ -14,9 +14,13 @@
   const formError = document.getElementById('formError');
   const regSuccess = document.getElementById('regSuccess');
   const idProofInput = document.getElementById('idProof');
-  const idProofSelected = document.getElementById('idProofSelected');
   const idProofRow = document.getElementById('idProofRow');
+  const idProofDrop = document.getElementById('idProofDrop');
+  const idProofEmpty = document.getElementById('idProofEmpty');
+  const idProofFilled = document.getElementById('idProofFilled');
+  const idProofFileName = document.getElementById('idProofFileName');
 
+  const instituteInput = document.getElementById('institute');
   const emailInput = document.getElementById('email');
   const iitrVerifyBlock = document.getElementById('iitrVerifyBlock');
   const sendOtpBtn = document.getElementById('sendOtpBtn');
@@ -45,6 +49,7 @@
   let verifiedToken = null;
   let verifiedEmail = null; // the exact IITR email the verifiedToken belongs to
   let autoSelectedCategory = false; // true if we auto-picked "iitr_student" for them
+  let autoSelectedInstitute = false; // true if we auto-filled "IIT Roorkee" for them
 
   function resetVerification() {
     verifiedToken = null;
@@ -54,14 +59,18 @@
     otpInput.value = '';
     emailVerifyStatus.hidden = true;
     sendOtpBtn.disabled = false;
+    sendOtpBtn.hidden = false;
     sendOtpBtn.textContent = 'Send Code';
     otpStatus.textContent = '';
+    verifyOtpBtn.disabled = false;
+    verifyOtpBtn.textContent = 'Verify Code';
   }
 
   function clearIdProof() {
     idProofInput.value = '';
-    idProofSelected.hidden = true;
-    idProofSelected.textContent = '';
+    idProofEmpty.hidden = false;
+    idProofFilled.hidden = true;
+    idProofDrop.classList.remove('has-file');
   }
 
   function currentFee() {
@@ -101,6 +110,13 @@
         updateFeeSummary();
       }
 
+      // Auto-fill the institute name too, same rule: only touch it if it's
+      // empty or if we're the ones who filled it in last time.
+      if (!instituteInput.value.trim() || autoSelectedInstitute) {
+        instituteInput.value = 'IIT Roorkee';
+        autoSelectedInstitute = true;
+      }
+
       // If they'd verified a different email earlier, that verification
       // no longer applies to what's currently typed.
       if (verifiedEmail && email.toLowerCase() !== verifiedEmail) {
@@ -113,15 +129,25 @@
       resetVerification();
       clearIdProof();
 
-      // Only clear an auto-selected category — never touch a category the
-      // user picked manually themselves.
+      // Only clear an auto-selected category/institute — never touch values
+      // the user typed in themselves.
       if (autoSelectedCategory) {
         categorySelect.value = '';
         autoSelectedCategory = false;
         updateFeeSummary();
       }
+      if (autoSelectedInstitute) {
+        instituteInput.value = '';
+        autoSelectedInstitute = false;
+      }
     }
   }
+
+  // If the user edits the institute field manually, stop treating it as
+  // "ours to overwrite" later.
+  instituteInput.addEventListener('input', () => {
+    autoSelectedInstitute = false;
+  });
 
   emailInput.addEventListener('input', handleEmailChange);
 
@@ -176,7 +202,20 @@
     requestOtp();
   });
 
-  verifyOtpBtn.addEventListener('click', async () => {
+  // Only digits, and cap at 6 — also lets us reliably detect "a full code
+  // was just typed/pasted" without guessing at partial input.
+  otpInput.addEventListener('input', () => {
+    const digitsOnly = otpInput.value.replace(/\D/g, '').slice(0, 6);
+    if (digitsOnly !== otpInput.value) otpInput.value = digitsOnly;
+
+    if (digitsOnly.length === 6 && !verifyOtpBtn.disabled) {
+      verifyOtp(); // auto-verify — no click needed once all 6 digits are in
+    }
+  });
+
+  verifyOtpBtn.addEventListener('click', verifyOtp);
+
+  async function verifyOtp() {
     const email = emailInput.value.trim();
     const otp = otpInput.value.trim();
 
@@ -184,13 +223,14 @@
       otpStatus.textContent = 'Please request a code first.';
       return;
     }
-    if (!otp) {
-      otpStatus.textContent = 'Please enter the code from your email.';
+    if (otp.length !== 6) {
+      otpStatus.textContent = 'Please enter the 6-digit code from your email.';
       return;
     }
 
     verifyOtpBtn.disabled = true;
     verifyOtpBtn.textContent = 'Verifying...';
+    otpStatus.textContent = 'Checking code...';
 
     try {
       const res = await fetch('/api/verify-otp', {
@@ -207,32 +247,34 @@
       emailVerifyStatus.textContent = '✓ Email verified: ' + email;
       emailVerifyStatus.hidden = false;
       otpRow.hidden = true;
-      sendOtpBtn.textContent = 'Verified ✓';
+      sendOtpBtn.hidden = true;
     } catch (err) {
       otpStatus.textContent = err.message || 'That code is incorrect or expired. Please try again.';
-    } finally {
       verifyOtpBtn.disabled = false;
       verifyOtpBtn.textContent = 'Verify Code';
     }
-  });
+  }
 
-  // ---- Show the chosen filename so people know their upload registered ----
+  // ---- Show the chosen filename (and a clear confirmed state) so people
+  // know their upload actually registered, instead of the box just sitting
+  // there looking unchanged ----
   if (idProofInput) {
     idProofInput.addEventListener('change', () => {
       const file = idProofInput.files[0];
       if (!file) {
-        idProofSelected.hidden = true;
+        clearIdProof();
         return;
       }
       if (file.size > MAX_ID_PROOF_BYTES) {
-        idProofSelected.hidden = true;
         showError('That ID proof file is too large. Please upload a file under 4 MB.');
-        idProofInput.value = '';
+        clearIdProof();
         return;
       }
       clearError();
-      idProofSelected.textContent = 'Selected: ' + file.name;
-      idProofSelected.hidden = false;
+      idProofFileName.textContent = file.name;
+      idProofEmpty.hidden = true;
+      idProofFilled.hidden = false;
+      idProofDrop.classList.add('has-file');
     });
   }
 

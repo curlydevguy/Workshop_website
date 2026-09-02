@@ -579,6 +579,56 @@ h1, h2, h3 { color: var(--text-dark); line-height: 1.2; }
 .form-row input[type="file"] { border: 1px dashed #9ca3af; background: var(--gray-light); cursor: pointer; }
 .form-row .field-hint { font-size: 0.8rem; color: var(--text-soft); }
 .form-row .file-selected { font-size: 0.85rem; color: #15803d; font-weight: 600; }
+
+/* Custom file-upload widget: replaces the native "Choose File / No file
+   chosen" control with a clickable box that visibly flips to a confirmed
+   state (filename + checkmark) once something is selected. */
+.file-drop {
+  position: relative;
+  border: 1.5px dashed #9ca3af;
+  background: var(--gray-light);
+  border-radius: var(--radius-sm);
+  padding: 0.9rem 1.1rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+.file-drop:hover { border-color: var(--primary-blue); }
+.file-drop.has-file { border-style: solid; border-color: #15803d; background: #f0fdf4; }
+.file-drop-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+.file-drop-empty {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--text-main);
+  font-size: 0.92rem;
+}
+.file-drop-icon { font-size: 1.05rem; }
+.file-drop-filled {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.92rem;
+}
+.file-drop-check { color: #15803d; font-weight: 700; }
+.file-drop-name {
+  font-weight: 600;
+  color: var(--text-dark);
+  overflow-wrap: anywhere;
+}
+.file-drop-change {
+  margin-left: auto;
+  color: var(--primary-blue);
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-decoration: underline;
+}
 .form-submit-note {
   font-size: 0.85rem; color: var(--text-main); background: #eff6ff; padding: 1rem;
   border-radius: var(--radius-sm); border-left: 4px solid #3b82f6; margin-top: 0.5rem;

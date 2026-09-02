@@ -6,7 +6,7 @@
 // 4. Returns the order details the frontend needs to open Razorpay checkout.
 
 const Razorpay = require('razorpay');
-const { appendRegistrationRow } = require('./sheets');
+const { appendRegistrationRow, isEmailAlreadyRegistered } = require('./sheets');
 const { uploadIdProof } = require('./drive');
 const { readVerifiedToken } = require('./otp');
 
@@ -42,6 +42,20 @@ module.exports = async function handler(req, res) {
     if (!idProofBase64) {
       res.status(400).json({ error: 'Please upload a photo of your college ID card showing your roll number.' });
       return;
+    }
+
+    // One completed registration per email. Pending/abandoned attempts
+    // don't count, so someone who closed the payment popup can still retry.
+    try {
+      const alreadyRegistered = await isEmailAlreadyRegistered(email);
+      if (alreadyRegistered) {
+        res.status(400).json({ error: 'This email address has already been used for a completed registration. Each participant may register only once.' });
+        return;
+      }
+    } catch (dupCheckErr) {
+      // If the duplicate check itself fails (e.g. Sheets hiccup), don't let
+      // that silently block every registration — log it and continue.
+      console.error('Duplicate email check failed:', dupCheckErr);
     }
 
     // Only the IITR-student discount tier needs a verified email — other

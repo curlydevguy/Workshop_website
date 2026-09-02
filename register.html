@@ -115,9 +115,19 @@
           <!-- ============ COLLEGE ID CARD (auto-shown alongside the IITR verification block above) ============ -->
           <div class="form-row" id="idProofRow" hidden>
             <label for="idProof">College ID Card Photo (showing your Roll No.)</label>
-            <input type="file" id="idProof" name="idProof" accept="image/*,.pdf">
-            <span class="field-hint">Upload a clear photo or scan of your college ID card — your roll number must be visible. JPG, PNG, or PDF, max 4 MB.</span>
-            <span class="file-selected" id="idProofSelected" hidden></span>
+            <div class="file-drop" id="idProofDrop">
+              <input type="file" id="idProof" name="idProof" accept="image/*,.pdf" class="file-drop-input">
+              <div class="file-drop-empty" id="idProofEmpty">
+                <span class="file-drop-icon">📎</span>
+                <span>Click to upload your ID card — JPG, PNG, or PDF, max 4 MB</span>
+              </div>
+              <div class="file-drop-filled" id="idProofFilled" hidden>
+                <span class="file-drop-check">✓</span>
+                <span class="file-drop-name" id="idProofFileName"></span>
+                <span class="file-drop-change">Change</span>
+              </div>
+            </div>
+            <span class="field-hint">Upload a clear photo or scan of your college ID card — your roll number must be visible.</span>
           </div>
 
           <!-- ============ FEE SUMMARY (updates live) ============ -->

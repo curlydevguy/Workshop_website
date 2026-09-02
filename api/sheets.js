@@ -72,4 +72,30 @@ async function markRegistrationPaid(razorpayOrderId, razorpayPaymentId) {
   });
 }
 
-module.exports = { appendRegistrationRow, markRegistrationPaid };
+// Called from register.js before creating a Razorpay order.
+// Returns true if this email already has a "paid" row — i.e. someone
+// already completed a registration with it. Pending (unpaid, abandoned)
+// rows don't block a retry, since that would lock someone out just because
+// they closed the payment popup once.
+async function isEmailAlreadyRegistered(email) {
+  const auth = getAuth();
+  const sheets = google.sheets({ version: "v4", auth });
+
+  const readResult = await sheets.spreadsheets.values.get({
+    spreadsheetId: process.env.GOOGLE_SHEET_ID,
+    range: "Registrations!C:I", // C=Email, ... I=Status
+  });
+
+  const rows = readResult.data.values || [];
+  const target = (email || "").trim().toLowerCase();
+
+  // Row 0 is the header row. Within each row, column C is index 0 here
+  // (since the range starts at C), and Status (I) is index 6.
+  return rows.slice(1).some((row) => {
+    const rowEmail = (row[0] || "").trim().toLowerCase();
+    const status = (row[6] || "").trim().toLowerCase();
+    return rowEmail === target && status === "paid";
+  });
+}
+
+module.exports = { appendRegistrationRow, markRegistrationPaid, isEmailAlreadyRegistered };
