@@ -73,28 +73,7 @@
             </div>
           </div>
 
-          <div class="form-grid-2">
-            <div class="form-row">
-              <label for="phone">Phone Number</label>
-              <input type="tel" id="phone" name="phone" required autocomplete="tel">
-            </div>
-            <div class="form-row">
-              <label for="institute">Institute / Organization</label>
-              <input type="text" id="institute" name="institute" required autocomplete="organization">
-            </div>
-          </div>
-
-          <div class="form-row">
-            <label for="category">Registration Category</label>
-            <select id="category" name="category" required>
-              <option value="">Select your category...</option>
-              <option value="iitr_student" data-fee="500">IIT Roorkee Student / Scholar — ₹500</option>
-              <option value="other_student" data-fee="1000">Other Institute Student / Scholar / Faculty — ₹1000</option>
-              <option value="industry" data-fee="2000">Industry Professional / Others — ₹2000</option>
-            </select>
-          </div>
-
-          <!-- ============ IITR EMAIL VERIFICATION (auto-shown when the Email Address above is an @iitr.ac.in address) ============ -->
+          <!-- ============ IITR EMAIL VERIFICATION (right below Email — auto-shown the moment an @iitr.ac.in address is typed) ============ -->
           <div class="form-row" id="iitrVerifyBlock" hidden>
             <div style="display:flex; gap:0.5rem; align-items:center;">
               <button type="button" id="sendOtpBtn" class="btn btn-secondary" style="white-space:nowrap;">Send Code</button>
@@ -112,6 +91,29 @@
             </div>
           </div>
 
+          <div class="form-grid-2">
+            <div class="form-row">
+              <label for="phone">Phone Number</label>
+              <input type="tel" id="phone" name="phone" required autocomplete="tel">
+            </div>
+            <div class="form-row">
+              <label for="category">Registration Category</label>
+              <select id="category" name="category" required disabled>
+                <option value="">Enter your email above first...</option>
+                <option value="iitr_student" data-fee="500">IIT Roorkee Student / Scholar — ₹500</option>
+                <option value="other_student" data-fee="1000">Other Institute Student / Scholar / Faculty — ₹1000</option>
+                <option value="industry" data-fee="2000">Industry Professional / Others — ₹2000</option>
+              </select>
+              <span class="field-hint" id="categoryHint">Enter your email address above to unlock this field.</span>
+            </div>
+          </div>
+
+          <!-- ============ INSTITUTE / ORGANIZATION (only for non-IITR categories — hidden until a category is chosen) ============ -->
+          <div class="form-row" id="instituteRow" hidden>
+            <label for="institute">Institute / Organization</label>
+            <input type="text" id="institute" name="institute" autocomplete="organization">
+          </div>
+
           <!-- ============ COLLEGE ID CARD (auto-shown alongside the IITR verification block above) ============ -->
           <div class="form-row" id="idProofRow" hidden>
             <label for="idProof">College ID Card Photo (showing your Roll No.)</label>
@@ -119,11 +121,11 @@
               <input type="file" id="idProof" name="idProof" accept="image/*,.pdf" class="file-drop-input">
               <div class="file-drop-empty" id="idProofEmpty">
                 <span class="file-drop-icon">📎</span>
-                <span>Click to upload your ID card — JPG, PNG, or PDF, max 4 MB</span>
+                <span>Select or upload your ID — JPG, PNG, or PDF, max 4 MB</span>
               </div>
               <div class="file-drop-filled" id="idProofFilled" hidden>
                 <span class="file-drop-check">✓</span>
-                <span class="file-drop-name" id="idProofFileName"></span>
+                <span class="file-drop-name">Uploaded — <span id="idProofFileName"></span></span>
                 <span class="file-drop-change">Change</span>
               </div>
             </div>

@@ -22,6 +22,8 @@
   const idProofCheckStatus = document.getElementById('idProofCheckStatus');
 
   const instituteInput = document.getElementById('institute');
+  const instituteRow = document.getElementById('instituteRow');
+  const categoryHint = document.getElementById('categoryHint');
   const emailInput = document.getElementById('email');
   const iitrVerifyBlock = document.getElementById('iitrVerifyBlock');
   const sendOtpBtn = document.getElementById('sendOtpBtn');
@@ -94,36 +96,74 @@
     feeSummary.hidden = false;
   }
 
+  // ---- Institute row only ever applies to the manual (non-IITR) path —
+  // hidden until a category has actually been picked, and always hidden
+  // while the category select itself is locked (no email yet, or IITR
+  // auto-selected). ----
+  function updateInstituteVisibility() {
+    if (categorySelect.disabled) {
+      instituteRow.hidden = true;
+      instituteInput.required = false;
+      return;
+    }
+    const hasCategory = !!categorySelect.value;
+    instituteRow.hidden = !hasCategory;
+    instituteInput.required = hasCategory;
+    if (!hasCategory) instituteInput.value = '';
+  }
+
   // ---- Core: react to the email field, live ----
-  // The "Send Code" verification block and the College ID Card upload are
-  // both only relevant to IITR members (they exist to unlock/prove the
-  // ₹500 student rate) — so they always show or hide together.
+  // Category stays locked until an email is typed. Typing an @iitr.ac.in
+  // address auto-picks + locks the IITR student rate, keeps the institute
+  // name filled internally (IIT Roorkee) but hidden, and reveals the OTP
+  // verification block + College ID upload right below the email field.
+  // Any other email unlocks the category dropdown for manual choice, and
+  // reveals Institute/Organization once a category is actually picked.
   function handleEmailChange() {
     const email = emailInput.value.trim();
     const iitr = email && isIitrEmail(email);
+
+    if (!email) {
+      categorySelect.disabled = true;
+      categorySelect.value = '';
+      autoSelectedCategory = false;
+      categoryHint.hidden = false;
+      categoryHint.textContent = 'Enter your email address above to unlock this field.';
+      updateFeeSummary();
+
+      instituteRow.hidden = true;
+      instituteInput.value = '';
+      instituteInput.required = false;
+      autoSelectedInstitute = false;
+
+      iitrVerifyBlock.hidden = true;
+      idProofRow.hidden = true;
+      idProofInput.required = false;
+      resetVerification();
+      clearIdProof();
+      return;
+    }
 
     if (iitr) {
       iitrVerifyBlock.hidden = false;
       idProofRow.hidden = false;
       idProofInput.required = true;
 
-      // Auto-select the IITR rate if the user hasn't manually chosen a
-      // different category themselves.
-      if (!categorySelect.value || autoSelectedCategory) {
-        categorySelect.value = 'iitr_student';
-        autoSelectedCategory = true;
-        updateFeeSummary();
-      }
+      // Lock the category to the IITR rate — payment is still gated on
+      // actually verifying the email via OTP at submit time.
+      categorySelect.value = 'iitr_student';
+      categorySelect.disabled = true;
+      autoSelectedCategory = true;
+      categoryHint.hidden = false;
+      categoryHint.textContent = 'Auto-selected for your @iitr.ac.in address — verify your email below to continue.';
+      updateFeeSummary();
 
-      // Auto-fill the institute name too, same rule: only touch it if it's
-      // empty or if we're the ones who filled it in last time.
-      if (!instituteInput.value.trim() || autoSelectedInstitute) {
-        instituteInput.value = 'IIT Roorkee';
-        autoSelectedInstitute = true;
-      }
+      // Institute is known (IIT Roorkee) — keep the value, keep it hidden.
+      instituteInput.value = 'IIT Roorkee';
+      autoSelectedInstitute = true;
+      instituteRow.hidden = true;
+      instituteInput.required = false;
 
-      // If they'd verified a different email earlier, that verification
-      // no longer applies to what's currently typed.
       if (verifiedEmail && email.toLowerCase() !== verifiedEmail) {
         resetVerification();
       }
@@ -134,17 +174,20 @@
       resetVerification();
       clearIdProof();
 
-      // Only clear an auto-selected category/institute — never touch values
-      // the user typed in themselves.
+      // Unlock category for manual selection.
+      categorySelect.disabled = false;
+      categoryHint.hidden = true;
       if (autoSelectedCategory) {
         categorySelect.value = '';
         autoSelectedCategory = false;
-        updateFeeSummary();
       }
+      updateFeeSummary();
+
       if (autoSelectedInstitute) {
         instituteInput.value = '';
         autoSelectedInstitute = false;
       }
+      updateInstituteVisibility();
     }
   }
 
@@ -157,11 +200,17 @@
   emailInput.addEventListener('input', handleEmailChange);
 
   // If the user manually changes the category themselves, it's no longer
-  // "auto-selected" — don't clobber their choice later.
+  // "auto-selected" — never touch the institute row unless the category
+  // path allows it (locked/IITR path never shows it at all).
   categorySelect.addEventListener('change', () => {
     autoSelectedCategory = false;
     updateFeeSummary();
+    updateInstituteVisibility();
   });
+
+  // Sync everything once on load — covers browser autofill restoring a
+  // previously-typed email before any 'input' event fires.
+  handleEmailChange();
 
   async function requestOtp() {
     const email = emailInput.value.trim();
@@ -253,6 +302,7 @@
       emailVerifyStatus.hidden = false;
       otpRow.hidden = true;
       sendOtpBtn.hidden = true;
+      categoryHint.textContent = '✓ Verified — IIT Roorkee Student rate locked in.';
     } catch (err) {
       otpStatus.textContent = err.message || 'That code is incorrect or expired. Please try again.';
       verifyOtpBtn.disabled = false;

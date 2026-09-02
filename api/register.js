@@ -34,12 +34,23 @@ module.exports = async function handler(req, res) {
   try {
     const { fullName, email, phone, institute, category, idProofBase64, idProofFileName, verifiedToken, idProofAiCheckResult, idProofAiCheckReason } = req.body || {};
 
-    if (!fullName || !email || !phone || !institute || !category) {
+    if (!fullName || !email || !phone || !category) {
       res.status(400).json({ error: 'Please fill in every field before continuing.' });
       return;
     }
 
-    if (!idProofBase64) {
+    // Institute/Organization is only collected (and required) for the
+    // manual, non-IITR categories — the IITR path knows the institute
+    // implicitly and never shows that field.
+    if (category !== 'iitr_student' && !institute) {
+      res.status(400).json({ error: 'Please enter your institute or organization.' });
+      return;
+    }
+
+    // ID proof is only ever asked of the IITR-student rate on the frontend
+    // — so it should only ever be required here too. Requiring it
+    // unconditionally was blocking every non-IITR registration.
+    if (category === 'iitr_student' && !idProofBase64) {
       res.status(400).json({ error: 'Please upload a photo of your college ID card showing your roll number.' });
       return;
     }
