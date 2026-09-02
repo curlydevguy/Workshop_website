@@ -36,4 +36,48 @@ async function sendOtpEmail(toEmail, otp) {
   });
 }
 
-module.exports = { sendOtpEmail };
+// Sent from verify.js, only after a payment has actually been confirmed
+// (never from register.js, since that just creates the order — the person
+// may still abandon the Razorpay popup at that point).
+//
+// details: { fullName, category, amount, paymentId }
+async function sendConfirmationEmail(toEmail, details) {
+  const { fullName, category, amount, paymentId } = details || {};
+
+  const categoryLabels = {
+    iitr_student: 'IIT Roorkee Student',
+    other_student: 'Student (Other Institute)',
+    industry: 'Industry / Professional',
+  };
+  const categoryLabel = categoryLabels[category] || category || '';
+
+  await transporter.sendMail({
+    from: `"AI for Secure 6G Workshop" <${process.env.GMAIL_USER}>`,
+    to: toEmail,
+    subject: 'Registration Confirmed — AI for Secure 6G Workshop',
+    text:
+      `Hi ${fullName || 'there'},\n\n` +
+      `Your registration for the AI for Secure 6G Workshop is confirmed.\n\n` +
+      `Category: ${categoryLabel}\n` +
+      `Amount paid: ₹${amount}\n` +
+      `Payment ID: ${paymentId}\n\n` +
+      `We'll send any further updates about the workshop to this email address, ` +
+      `so please keep an eye on this inbox (and check spam, just in case).\n\n` +
+      `See you at the workshop!`,
+    html:
+      `<div style="font-family: Arial, sans-serif; font-size: 15px; color: #1a1a1a;">` +
+      `<p>Hi ${fullName || 'there'},</p>` +
+      `<p>Your registration for the <strong>AI for Secure 6G Workshop</strong> is confirmed.</p>` +
+      `<table style="margin: 16px 0; border-collapse: collapse;">` +
+      `<tr><td style="padding: 4px 12px 4px 0; color: #666;">Category</td><td style="padding: 4px 0;">${categoryLabel}</td></tr>` +
+      `<tr><td style="padding: 4px 12px 4px 0; color: #666;">Amount paid</td><td style="padding: 4px 0;">₹${amount}</td></tr>` +
+      `<tr><td style="padding: 4px 12px 4px 0; color: #666;">Payment ID</td><td style="padding: 4px 0;">${paymentId}</td></tr>` +
+      `</table>` +
+      `<p style="color: #666;">We'll send any further updates about the workshop to this email address, ` +
+      `so please keep an eye on this inbox (and check spam, just in case).</p>` +
+      `<p>See you at the workshop!</p>` +
+      `</div>`,
+  });
+}
+
+module.exports = { sendOtpEmail, sendConfirmationEmail };

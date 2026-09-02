@@ -73,6 +73,17 @@ async function markRegistrationPaid(razorpayOrderId, razorpayPaymentId) {
       values: [[razorpayPaymentId, "paid"]],
     },
   });
+
+  // Hand back the row's details so verify.js can send a confirmation email
+  // without needing the frontend to resend fullName/category/amount.
+  // Row columns: [Timestamp, Name, Email, Phone, Institution, Category, Amount, ...]
+  const matchedRow = rows[matchedRowNumber - 1];
+  return {
+    fullName: matchedRow[1] || "",
+    email: matchedRow[2] || "",
+    category: matchedRow[5] || "",
+    amount: matchedRow[6] || "",
+  };
 }
 
 // Called from register.js before creating a Razorpay order.

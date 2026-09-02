@@ -5,6 +5,7 @@
 
 const crypto = require('crypto');
 const { markRegistrationPaid } = require('./sheets');
+const { sendConfirmationEmail } = require('./mailer');
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -36,12 +37,29 @@ module.exports = async function handler(req, res) {
     }
 
     // Signature checks out — mark the row paid in the Sheet.
+    let registrationDetails = null;
     try {
-      await markRegistrationPaid(razorpay_order_id, razorpay_payment_id);
+      registrationDetails = await markRegistrationPaid(razorpay_order_id, razorpay_payment_id);
     } catch (sheetErr) {
       // The payment is genuinely verified at this point — don't fail 
       // person's registration over a Sheet hiccup, just log it for follow-up.
       console.error('Sheet update failed:', sheetErr);
+    }
+
+    // Send the confirmation email now that payment is actually verified.
+    // This never blocks or fails the response — a bounced/slow email
+    // shouldn't turn a successful payment into an error for the user.
+    if (registrationDetails && registrationDetails.email) {
+      try {
+        await sendConfirmationEmail(registrationDetails.email, {
+          fullName: registrationDetails.fullName,
+          category: registrationDetails.category,
+          amount: registrationDetails.amount,
+          paymentId: razorpay_payment_id,
+        });
+      } catch (mailErr) {
+        console.error('Confirmation email failed:', mailErr);
+      }
     }
 
     res.status(200).json({ verified: true });
