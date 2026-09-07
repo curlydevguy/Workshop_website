@@ -1,11 +1,17 @@
 // api/drive.js
-// Uploads a registrant's college ID proof to a Google Drive folder using the
-// same service account already used for Sheets, and returns a shareable link
-// that gets logged alongside their row in the sheet.
+// Uploads registrant files (college ID proofs, payment screenshots) to
+// Google Drive using the same service account already used for Sheets, and
+// returns a shareable link that gets logged alongside their row in the sheet.
 //
-// Requires one extra env var beyond the existing Sheets setup:
-//   GOOGLE_DRIVE_FOLDER_ID  — the Drive folder the service account can write into
-// The folder must be shared with GOOGLE_SERVICE_ACCOUNT_EMAIL as an Editor.
+// ID proofs and payment screenshots are kept in two SEPARATE Drive folders
+// to stay organized. Requires two env vars beyond the existing Sheets setup:
+//   GOOGLE_DRIVE_ID_FOLDER_ID       — folder for college ID proof uploads
+//   GOOGLE_DRIVE_PAYMENT_FOLDER_ID  — folder for payment screenshot uploads
+// Both folders must be shared with GOOGLE_SERVICE_ACCOUNT_EMAIL as an Editor.
+//
+// Backwards compatibility: if the new folder-specific env vars aren't set,
+// this falls back to the old single GOOGLE_DRIVE_FOLDER_ID for both types,
+// so nothing breaks if you haven't updated Vercel env vars yet.
 
 const { google } = require("googleapis");
 const { Readable } = require("stream");
@@ -27,11 +33,14 @@ function parseDataUrl(dataUrl) {
   return { mimeType: match[1], buffer: Buffer.from(match[2], "base64") };
 }
 
-// Uploads the ID proof and returns a viewable link (or null if not configured,
-// so registration can still proceed without blocking on ID proof storage).
-async function uploadIdProof({ base64, fileName, fullName }) {
-  if (!process.env.GOOGLE_DRIVE_FOLDER_ID) {
-    console.warn("GOOGLE_DRIVE_FOLDER_ID not set — skipping ID proof upload.");
+// Shared upload helper — takes a base64 data URL plus a human-readable name
+// prefix and a target folderId, drops the file into that folder, and returns
+// a viewable link (or null if no folder id could be resolved, so callers can
+// still let the rest of the flow — registration, payment proof — go through
+// without blocking on Drive storage).
+async function uploadFile({ base64, fileName, namePrefix, folderId }) {
+  if (!folderId) {
+    console.warn("No Drive folder id configured — skipping file upload.");
     return null;
   }
 
@@ -39,13 +48,13 @@ async function uploadIdProof({ base64, fileName, fullName }) {
   const auth = getDriveAuth();
   const drive = google.drive({ version: "v3", auth });
 
-  const safeName = (fullName || "registrant").replace(/[^\w\s-]/g, "").trim();
+  const safeName = (namePrefix || "upload").replace(/[^\w\s-]/g, "").trim();
   const ext = (fileName || "").includes(".") ? fileName.split(".").pop() : "";
 
   const file = await drive.files.create({
     requestBody: {
-      name: `${safeName} - ID Proof${ext ? "." + ext : ""}`,
-      parents: [process.env.GOOGLE_DRIVE_FOLDER_ID],
+      name: `${safeName}${ext ? "." + ext : ""}`,
+      parents: [folderId],
     },
     media: {
       mimeType,
@@ -64,4 +73,22 @@ async function uploadIdProof({ base64, fileName, fullName }) {
   return file.data.webViewLink;
 }
 
-module.exports = { uploadIdProof };
+// Uploads the ID proof to the dedicated ID-proof folder and returns a
+// viewable link. Falls back to the legacy shared folder if the new
+// ID-specific env var isn't set.
+async function uploadIdProof({ base64, fileName, fullName }) {
+  const folderId = process.env.GOOGLE_DRIVE_ID_FOLDER_ID || process.env.GOOGLE_DRIVE_FOLDER_ID;
+  return uploadFile({ base64, fileName, namePrefix: `${fullName || "registrant"} - ID Proof`, folderId });
+}
+
+// Uploads a payment confirmation screenshot (SBI Collect receipt) to the
+// dedicated payment-proof folder and returns a viewable link. Called from
+// api/submit-payment.js once someone completes payment and comes back to
+// submit proof. Falls back to the legacy shared folder if the new
+// payment-specific env var isn't set.
+async function uploadPaymentProof({ base64, fileName, email }) {
+  const folderId = process.env.GOOGLE_DRIVE_PAYMENT_FOLDER_ID || process.env.GOOGLE_DRIVE_FOLDER_ID;
+  return uploadFile({ base64, fileName, namePrefix: `${email || "registrant"} - Payment Proof`, folderId });
+}
+
+module.exports = { uploadFile, uploadIdProof, uploadPaymentProof };

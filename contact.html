@@ -10,11 +10,12 @@
 <meta name="view-transition" content="same-origin">
 </head>
 <body data-page="contact">
+  <a href="#main-content" class="skip-link">Skip to main content</a>
 
 <!-- ============ HEADER INJECTION POINT ============ -->
 <div id="header-placeholder"></div>
 
-<main>
+<main id="main-content">
 
   <!-- ============ HERO SECTION ============ -->
   <section class="page-hero page-hero-tint">
@@ -26,7 +27,7 @@
   </section>
 
   <!-- ============ HIGHLIGHT STRIP ============ -->
-  <section class="section" style="padding-top: clamp(1.5rem, 4vw, 2.5rem); padding-bottom: 0;">
+  <section class="section reveal" style="padding-top: clamp(1.5rem, 4vw, 2.5rem); padding-bottom: 0;">
     <div class="wrap">
       <div class="highlight-strip">
         <div class="panel cell">
@@ -58,14 +59,14 @@
           <span class="icon-badge">✉</span>
           <span class="meta">
             <span class="k">Email</span>
-            <span class="v">neetesh@cs.iitr.ac.in</span>
+            <a class="v contact-link" href="mailto:neetesh@cs.iitr.ac.in">neetesh@cs.iitr.ac.in</a>
           </span>
         </div>
         <div class="detail-row">
           <span class="icon-badge">☎</span>
           <span class="meta">
             <span class="k">Phone</span>
-            <span class="v">01332-284977</span>
+            <a class="v contact-link" href="tel:+911332284977">01332-284977</a>
           </span>
         </div>
       </div>
@@ -79,20 +80,21 @@
           <span class="icon-badge">✉</span>
           <span class="meta">
             <span class="k">Email</span>
-            <span class="v">abhaysah[at]ece.iitr.ac.in</span>
+            <a class="v contact-link" href="mailto:abhaysah@ece.iitr.ac.in">abhaysah@ece.iitr.ac.in</a>
           </span>
         </div>
         <div class="detail-row">
           <span class="icon-badge">☎</span>
           <span class="meta">
             <span class="k">Phone</span>
-            <span class="v">+91-1332-285235</span>
+            <a class="v contact-link" href="tel:+911332285235">+91-1332-285235</a>
           </span>
         </div>
       </div>
 
     </div>
   </section>
+
 
 </main>
 
@@ -122,6 +124,7 @@
   </div>
 </footer>
 
+<script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
 <script src="js/include.js"></script>
 <script src="js/main.js"></script>
 </body>

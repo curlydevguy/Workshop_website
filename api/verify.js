@@ -1,4 +1,13 @@
 // POST /api/verify
+//
+// ⚠️ CURRENTLY UNUSED — nothing on the frontend calls this endpoint anymore.
+// This was the Razorpay signature-verification step; Razorpay has been
+// removed in favor of SBI Collect. Left in place (unwired) since the SBI
+// Collect verification flow will likely follow a similar shape — matching
+// a payment reference back to a sheet row and flipping it to "paid" — just
+// swap the Razorpay-signature check below for whatever SBI Collect gives us
+// (a UTR/reference number, most likely, checked manually or via a report).
+//
 // Body: { razorpay_order_id, razorpay_payment_id, razorpay_signature, email }
 // Verifies the HMAC signature Razorpay sends back, then flips the matching
 // row (matched by razorpay_order_id) to "paid" in the Google Sheet.

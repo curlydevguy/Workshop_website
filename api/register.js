@@ -1,11 +1,12 @@
 // POST /api/register
 // Body: { fullName, email, phone, institute, category }
 // 1. Looks up the fee for the category SERVER-SIDE (never trust a client-sent amount).
-// 2. Creates a Razorpay order for that amount.
-// 3. Logs a "pending" row to the Google Sheet.
-// 4. Returns the order details the frontend needs to open Razorpay checkout.
+// 2. Logs a row to the Google Sheet with status "awaiting_payment".
+// 3. Returns a simple success response — no payment gateway right now.
+//    Payment is being moved to SBI Collect; that reconciliation flow will
+//    be wired up separately once the SBI Collect setup is finalized. Until
+//    then, registrations are collected here and payment is handled manually.
 
-const Razorpay = require('razorpay');
 const { appendRegistrationRow, isEmailAlreadyRegistered } = require('./sheets');
 const { uploadIdProof } = require('./drive');
 const { readVerifiedToken } = require('./otp');
@@ -19,11 +20,6 @@ const FEES = {
 };
 
 const IITR_DOMAIN = 'iitr.ac.in';
-
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -55,8 +51,8 @@ module.exports = async function handler(req, res) {
       return;
     }
 
-    // One completed registration per email. Pending/abandoned attempts
-    // don't count, so someone who closed the payment popup can still retry.
+    // One completed (paid) registration per email. Anyone still
+    // "awaiting_payment" doesn't count yet, so a genuine retry isn't blocked.
     try {
       const alreadyRegistered = await isEmailAlreadyRegistered(email);
       if (alreadyRegistered) {
@@ -101,17 +97,9 @@ module.exports = async function handler(req, res) {
       return;
     }
 
-    // Razorpay wants the amount in the smallest currency unit (paise for INR).
-    const order = await razorpay.orders.create({
-      amount: amount * 100,
-      currency: 'INR',
-      // Order IDs are already unique, so this doubles as our sheet row key.
-      notes: { fullName, email, phone, institute, category: finalCategory },
-    });
-
     // Upload the ID proof to Drive before logging the row, so the sheet can
-    // include a link to it. If this fails, we still let the person pay — we'd
-    // rather chase down a missing ID proof manually than block a payment.
+    // include a link to it. If this fails, we still let the registration go
+    // through — we'd rather chase down a missing ID proof manually.
     let idProofLink = '';
     try {
       idProofLink = (await uploadIdProof({ base64: idProofBase64, fileName: idProofFileName, fullName })) || '';
@@ -119,8 +107,9 @@ module.exports = async function handler(req, res) {
       console.error('ID proof upload failed:', driveErr);
     }
 
-    // Log a pending row. If this fails we still let the person pay — we'd
-    // rather reconcile a missing sheet row manually than block a payment.
+    // Log the row as "awaiting_payment" — column H (previously the Razorpay
+    // order/payment ID) is blank for now and will hold the SBI Collect
+    // UTR/reference number once that flow is wired up.
     try {
       await appendRegistrationRow([
         new Date().toISOString(),
@@ -130,22 +119,19 @@ module.exports = async function handler(req, res) {
         institute,
         finalCategory,
         amount,
-        order.id,      // PaymentID column temporarily holds the order_id
-        'pending',
+        '',                 // H — payment reference (SBI Collect UTR), filled in later
+        'awaiting_payment', // I
         idProofLink,
         idProofAiCheckResult || 'not_checked', // K — advisory only, never blocks
         idProofAiCheckReason || '',            // L
       ]);
     } catch (sheetErr) {
       console.error('Sheet insert failed:', sheetErr);
+      res.status(500).json({ error: 'Could not save your registration. Please try again in a moment.' });
+      return;
     }
 
-    res.status(200).json({
-      orderId: order.id,
-      amount: order.amount,
-      currency: order.currency,
-      keyId: process.env.RAZORPAY_KEY_ID,
-    });
+    res.status(200).json({ success: true });
   } catch (err) {
     console.error('register.js error:', err);
     res.status(500).json({ error: 'Could not start registration. Please try again in a moment.' });

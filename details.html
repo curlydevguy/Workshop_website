@@ -10,11 +10,12 @@
 <meta name="view-transition" content="same-origin">
 </head>
 <body data-page="details">
+  <a href="#main-content" class="skip-link">Skip to main content</a>
 
 <!-- ============ HEADER INJECTION POINT ============ -->
 <div id="header-placeholder"></div>
 
-<main>
+<main id="main-content">
 
   <!-- ============ HERO SECTION ============ -->
   <section class="page-hero page-hero-tint">
@@ -78,6 +79,49 @@
         </div>
       </div>
 
+      <!-- WHAT'S INCLUDED PANEL (Shaded) -->
+      <div class="panel panel-shade">
+        <div class="section-head">
+          <span class="eyebrow">What's Included</span>
+          <h2>Beyond the sessions</h2>
+        </div>
+        <div class="perks-grid">
+          <div class="perk-card">
+            <div class="perk-icon">🌍</div>
+            <h3>Global Networking</h3>
+            <p>Meet and connect with international professors and researchers, expanding your academic network on a global scale.</p>
+          </div>
+          <div class="perk-card">
+            <div class="perk-icon">🚁</div>
+            <h3>Complimentary Day 0 Workshop</h3>
+            <p>A complimentary Day 0 session previews the program for every registered participant. (UAV drone masterclass and V2X lecture run on Day 4.)</p>
+          </div>
+          <div class="perk-card">
+            <div class="perk-icon">🎁</div>
+            <h3>Welcome Kit &amp; High Tea</h3>
+            <p>A welcome kit and gift hamper, plus high tea, await every on-campus participant as the workshop gets underway.</p>
+          </div>
+          <div class="perk-card">
+            <div class="perk-icon">🏨</div>
+            <h3>Stay &amp; Food Arranged</h3>
+            <p>Accommodation and meals are arranged for outstation participants, payable upfront at the time of booking.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- CERTIFICATION PANEL -->
+      <div class="panel cert-panel">
+        <div class="section-head">
+          <span class="eyebrow">Certification</span>
+          <h2>A certificate that recognises your participation</h2>
+        </div>
+        <p class="perk-cert-caption">A certificate of participation is presented to every on-campus attendee at the close of the workshop.</p>
+        <div class="cert-media">
+          <img loading="lazy" src="images/sample-certificate.jpg" alt="Sample certificate of participation"
+               onerror="this.style.display='none'; this.parentNode.innerHTML='<span class=&quot;img-fallback&quot;>[Certificate Preview]</span>'">
+        </div>
+      </div>
+
       <!-- FEE STRUCTURE PANEL (Shaded) -->
       <div class="panel panel-shade">
         <div class="section-head">
@@ -85,29 +129,22 @@
           <h2>Fee structure</h2>
         </div>
 
-        <div class="table-scroll">
-          <table class="fee-table">
-            <thead>
-              <tr>
-                <th>Category</th>
-                <th class="amount">Fee</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>IIT Roorkee students &amp; research scholars</td>
-                <td class="amount">₹10,000</td>
-              </tr>
-              <tr class="alt">
-                <td>Students, research scholars, post-docs &amp; faculty from other institutes</td>
-                <td class="amount">₹20,000</td>
-              </tr>
-              <tr>
-                <td>Industry participants &amp; others</td>
-                <td class="amount">₹30,000</td>
-              </tr>
-            </tbody>
-          </table>
+        <div class="fee-grid">
+          <div class="fee-card">
+            <span class="fee-card-eyebrow">Category</span>
+            <h3>IIT Roorkee students &amp; research scholars</h3>
+            <div class="fee-card-amount">₹10,000</div>
+          </div>
+          <div class="fee-card">
+            <span class="fee-card-eyebrow">Category</span>
+            <h3>Students, research scholars, post-docs &amp; faculty from other institutes</h3>
+            <div class="fee-card-amount">₹20,000</div>
+          </div>
+          <div class="fee-card">
+            <span class="fee-card-eyebrow">Category</span>
+            <h3>Industry participants &amp; others</h3>
+            <div class="fee-card-amount">₹30,000</div>
+          </div>
         </div>
 
         <div class="note-box" style="margin-top: 2rem;">
@@ -116,6 +153,10 @@
 
         <div class="note-box" style="margin-top: 1rem; background: var(--white); border-left: 4px solid var(--primary-blue);">
           <strong>Certificate for everyone.</strong> Every registered participant — on-campus or online — will receive a certificate of participation on completion of the workshop.
+        </div>
+
+        <div class="note-box" style="margin-top: 1rem; background: var(--white); border-left: 4px solid var(--maroon);">
+          <strong>Accommodation.</strong> On-campus stay with food is arranged for outstation participants who need it — this is payable upfront at the time of booking, separate from the registration fee. Details will be shared after registration.
         </div>
       </div>
     </div>
@@ -149,6 +190,7 @@
   </div>
 </footer>
 
+<script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
 <script src="js/include.js"></script>
 <script src="js/main.js"></script>
 </body>

@@ -1,7 +1,7 @@
-// register.html — fee summary + Razorpay checkout flow.
-// Talks to two serverless functions:
-//   POST /api/register  -> creates a pending row + a Razorpay order
-//   POST /api/verify    -> verifies the payment signature, flips the row to "paid"
+// register.html — fee summary + registration submit flow.
+// Talks to one serverless function:
+//   POST /api/register  -> logs a row "awaiting payment" (no gateway right
+//   now — payment instructions via SBI Collect are shared separately)
 
 (function () {
   const form = document.getElementById('regForm');
@@ -463,82 +463,160 @@
       }
     }
 
-    let order;
+    let result;
     try {
       const res = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      order = await res.json();
-      if (!res.ok) throw new Error(order.error || 'Could not start registration. Please try again.');
+      result = await res.json();
+      if (!res.ok) throw new Error(result.error || 'Could not submit your registration. Please try again.');
     } catch (err) {
       setLoading(false);
-      showError(err.message || 'Something went wrong starting your registration. Please try again.');
+      showError(err.message || 'Something went wrong submitting your registration. Please try again.');
       return;
     }
 
-    // ---- Open Razorpay checkout with the order we just created ----
-    const rzp = new Razorpay({
-      key: order.keyId,
-      amount: order.amount,
-      currency: order.currency || 'INR',
-      order_id: order.orderId,
-      name: 'AI for Secure 6G: Foundations of FL, XAI, and LLMs',
-      description: 'Registration fee — ' + categorySelect.options[categorySelect.selectedIndex].text,
-      prefill: {
-        name: payload.fullName,
-        email: payload.email,
-        contact: payload.phone,
-      },
-      theme: { color: '#2563eb' },
-      handler: async function (response) {
-        // Payment succeeded at the gateway — now verify server-side before
-        // treating the registration as confirmed.
-        try {
-          const verifyRes = await fetch('/api/verify', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              email: payload.email,
-            }),
-          });
-          const verifyData = await verifyRes.json();
-          if (!verifyRes.ok || !verifyData.verified) {
-            throw new Error(verifyData.error || 'Payment could not be verified.');
-          }
+    // No payment gateway right now — registration is logged as "awaiting
+    // payment". The payment step (SBI Collect link + proof-of-payment form)
+    // reveals itself right below, so the participant can complete it in the
+    // same visit instead of waiting for a separate email.
+    document.getElementById('successName').textContent = payload.fullName;
+    document.getElementById('successEmail').textContent = payload.email;
+    form.hidden = true;
+    regSuccess.hidden = false;
 
-          document.getElementById('successName').textContent = payload.fullName;
-          document.getElementById('successEmail').textContent = payload.email;
-          document.getElementById('successPaymentId').textContent = response.razorpay_payment_id;
-          form.hidden = true;
-          regSuccess.hidden = false;
-          regSuccess.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } catch (err) {
-          setLoading(false);
-          showError(
-            (err.message || 'We could not verify your payment automatically.') +
-            ' If the amount was debited, please contact us via the Contact page with your payment reference before retrying.'
-          );
-        }
-      },
-      modal: {
-        ondismiss: function () {
-          // User closed the checkout without paying — just re-enable the form.
-          setLoading(false);
-        },
-      },
-    });
+    submittedEmail = payload.email;
+    revealPaymentStep(fee);
 
-    rzp.on('payment.failed', function (response) {
-      setLoading(false);
-      showError('Payment failed: ' + (response.error && response.error.description ? response.error.description : 'please try again.'));
-    });
-
+    regSuccess.scrollIntoView({ behavior: 'smooth', block: 'start' });
     setLoading(false);
-    rzp.open();
   });
+
+  // ==========================================================================
+  // PAYMENT STEP — appears once registration succeeds. Pay via SBI Collect,
+  // then submit proof of payment (reference number, amount, date, screenshot).
+  // ==========================================================================
+  const paymentStep = document.getElementById('paymentStep');
+  const paymentDueAmount = document.getElementById('paymentDueAmount');
+  const paymentProofForm = document.getElementById('paymentProofForm');
+  const paymentFormError = document.getElementById('paymentFormError');
+  const paymentSubmitBtn = document.getElementById('paymentSubmitBtn');
+  const paymentSuccess = document.getElementById('paymentSuccess');
+  const paymentScreenshotInput = document.getElementById('paymentScreenshot');
+  const paymentScreenshotDrop = document.getElementById('paymentScreenshotDrop');
+  const paymentScreenshotEmpty = document.getElementById('paymentScreenshotEmpty');
+  const paymentScreenshotFilled = document.getElementById('paymentScreenshotFilled');
+  const paymentScreenshotFileName = document.getElementById('paymentScreenshotFileName');
+
+  const MAX_SCREENSHOT_BYTES = 4 * 1024 * 1024; // 4 MB, same cap as ID proof
+  let submittedEmail = null;
+
+  // Reveal the payment step — unhide it, then add the "is-visible" class a
+  // tick later so the .reveal-pop transition (fade + slide up) actually
+  // plays instead of snapping straight to its final state.
+  function revealPaymentStep(fee) {
+    if (!paymentStep) return;
+    if (fee) paymentDueAmount.textContent = '₹' + fee;
+    paymentStep.hidden = false;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => paymentStep.classList.add('is-visible'));
+    });
+  }
+
+  function showPaymentError(message) {
+    if (!paymentFormError) return;
+    paymentFormError.textContent = message;
+    paymentFormError.hidden = false;
+  }
+
+  function clearPaymentError() {
+    if (!paymentFormError) return;
+    paymentFormError.hidden = true;
+    paymentFormError.textContent = '';
+  }
+
+  function setPaymentLoading(isLoading) {
+    if (!paymentSubmitBtn) return;
+    paymentSubmitBtn.disabled = isLoading;
+    paymentSubmitBtn.classList.toggle('is-loading', isLoading);
+  }
+
+  if (paymentScreenshotInput) {
+    paymentScreenshotInput.addEventListener('change', () => {
+      const file = paymentScreenshotInput.files[0];
+      if (!file) return;
+      if (file.size > MAX_SCREENSHOT_BYTES) {
+        showPaymentError('That screenshot is too large. Please upload a file under 4 MB.');
+        paymentScreenshotInput.value = '';
+        return;
+      }
+      clearPaymentError();
+      paymentScreenshotFileName.textContent = file.name;
+      paymentScreenshotEmpty.hidden = true;
+      paymentScreenshotFilled.hidden = false;
+      paymentScreenshotDrop.classList.add('has-file');
+    });
+  }
+
+  if (paymentProofForm) {
+    paymentProofForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearPaymentError();
+
+      if (!paymentProofForm.reportValidity()) return;
+
+      const screenshotFile = paymentScreenshotInput && paymentScreenshotInput.files[0];
+      if (!screenshotFile) {
+        showPaymentError('Please upload a screenshot of your payment confirmation.');
+        return;
+      }
+      if (screenshotFile.size > MAX_SCREENSHOT_BYTES) {
+        showPaymentError('That screenshot is too large. Please upload a file under 4 MB.');
+        return;
+      }
+      if (!submittedEmail) {
+        showPaymentError('We lost track of your registration email — please refresh and register again.');
+        return;
+      }
+
+      setPaymentLoading(true);
+
+      let screenshotBase64;
+      try {
+        screenshotBase64 = await readFileAsBase64(screenshotFile);
+      } catch (err) {
+        setPaymentLoading(false);
+        showPaymentError(err.message || 'Could not read the screenshot file. Please try again.');
+        return;
+      }
+
+      const paymentPayload = {
+        email: submittedEmail,
+        reference: document.getElementById('paymentRef').value.trim(),
+        screenshotBase64,
+        screenshotFileName: screenshotFile.name,
+      };
+
+      try {
+        const res = await fetch('/api/submit-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(paymentPayload),
+        });
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error || 'Could not submit your payment proof. Please try again.');
+      } catch (err) {
+        setPaymentLoading(false);
+        showPaymentError(err.message || 'Something went wrong submitting your payment proof. Please try again.');
+        return;
+      }
+
+      paymentProofForm.hidden = true;
+      paymentSuccess.hidden = false;
+      paymentSuccess.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setPaymentLoading(false);
+    });
+  }
 })();

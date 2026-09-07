@@ -12,12 +12,13 @@
   <meta name="view-transition" content="same-origin">
 </head>
 <body data-page="home">
+  <a href="#main-content" class="skip-link">Skip to main content</a>
 
   <!-- ============ HEADER INJECTION POINT ============ -->
   <div id="header-placeholder"></div>
 
   <!-- ============ MAIN CONTENT ============ -->
-  <main>
+  <main id="main-content">
 
     <!-- ============ HERO ============ -->
     <section class="hero hero-tint">
@@ -36,7 +37,7 @@
             </div>
             <div class="cell">
               <div class="label">Mode</div>
-              <div class="value">Hybrid (On-campus + Online)</div>
+              <div class="value">On-campus </div>
             </div>
             <div class="cell">
               <div class="label">Convener</div>
@@ -75,12 +76,79 @@
             </div>
           </div>
           <div class="split-media">
-            <img src="images/why.jpg" alt="overview illustration"
+            <img loading="lazy" src="images/why.jpg" alt="overview illustration"
                  onerror="this.style.display='none'; this.parentNode.innerHTML='<span class=&quot;img-fallback&quot;>[Overview Image]</span>'">
           </div>
         </div>
       </div>
     </section>
+
+    <!-- ============ WHY YOU SHOULD JOIN (Perks Grid) ============ -->
+    <section class="section-alt reveal">
+      <div class="wrap">
+        <div class="section-head center">
+          <span class="eyebrow">Why Attend</span>
+          <h2>Why you should join this workshop</h2>
+        </div>
+
+        <div class="perks-grid">
+          <div class="panel perk-card">
+            <div class="perk-icon">🔬</div>
+            <h3>Hands-On Experiments</h3>
+            <p>Work on live experiments and lab demonstrations, gaining direct hands-on exposure to real AI-for-6G-security research setups.</p>
+          </div>
+
+          <div class="panel perk-card">
+            <div class="perk-icon">🌐</div>
+            <h3>Global Exposure</h3>
+            <p>Take part in a SPARC-backed, India–international hybrid program, gaining exposure to global research practices and standards.</p>
+          </div>
+
+          <div class="panel perk-card">
+            <div class="perk-icon">🎤</div>
+            <h3>Expert Talks</h3>
+            <p>Hear curated talks from leading researchers and industry experts on the latest advances shaping AI for 6G security.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ WHY JOIN (Perks Grid) ============ -->
+    <section class="section reveal">
+      <div class="wrap">
+        <div class="section-head center">
+          <span class="eyebrow">For PhD Scholars, Post-Docs &amp; Researchers</span>
+          <h2>More than a workshop — a chance to connect globally</h2>
+        </div>
+
+        <div class="perks-grid">
+          <div class="panel perk-card">
+            <div class="perk-icon">🌍</div>
+            <h3>Global Networking</h3>
+            <p>Connect with renowned international professors, researchers, and fellow scholars while expanding your academic network. Exchange ideas, discover future collaborations, and build meaningful relationships with experts shaping the future of AI and 6G technologies.</p>
+          </div>
+
+          <div class="panel perk-card">
+            <div class="perk-icon">🚁</div>
+            <h3>Complimentary Welcome Workshop</h3>
+            <p>Registered participants receive exclusive complimentary access to a special welcome workshop on 20 December 2026, featuring distinguished speakers, insightful discussions, and early networking opportunities before the main program begins.</p>
+          </div>
+
+          <div class="panel perk-card">
+            <div class="perk-icon">🎁</div>
+            <h3>Welcome Kit &amp; High Tea</h3>
+            <p>Every on-campus participant receives a thoughtfully curated welcome kit along with refreshments and high tea during networking breaks, creating a professional, comfortable, and engaging conference experience throughout the workshop.</p>
+          </div>
+
+          <div class="panel perk-card">
+            <div class="perk-icon">🏨</div>
+            <h3>Stay &amp; Food Arranged</h3>
+            <p>Comfortable on-campus accommodation and meal arrangements are available for outstation participants, allowing you to focus entirely on learning, networking, and enjoying a seamless residential experience at IIT Roorkee.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
      <!-- ============ SPEAKERS (Shaded Panel) ============ -->
 <section class="section-alt reveal">
   <div class="wrap">
@@ -91,9 +159,9 @@
         <h2>Who's speaking</h2>
       </div>
 
-      <div class="people-grid">
+      <div class="people-grid" id="speakers-grid">
         <article class="person-card">
-          <img class="demo-img" src="images/Madhusanka.jpg" alt="speaker 1">
+          <img loading="lazy" class="demo-img" src="images/Madhusanka.jpg" alt="speaker 1">
           <div class="person-body">
             <h3>Prof.Madhusanka Liyanage</h3>
             <p class="affil">Professor & Ad Astra Fellow, School of Computer Science, University College Dublin, Ireland</p>
@@ -102,7 +170,7 @@
         </article>
 
         <article class="person-card">
-          <img class="demo-img" src="images/Dushantha.jpg" alt="speaker 2">
+          <img loading="lazy" class="demo-img" src="images/Dushantha.jpg" alt="speaker 2">
           <div class="person-body">
             <h3>Prof. Dushantha Nalin K Jayakody</h3>
             <p class="affil">Professor, Lusófona University, Portugal</p>
@@ -111,7 +179,7 @@
         </article>
 
         <article class="person-card">
-          <img class="demo-img" src="images/neetesh.jpeg" alt="speaker 4">
+          <img loading="lazy" class="demo-img" src="images/neetesh.jpeg" alt="speaker 4">
           <div class="person-body">
             <h3>Dr. Neetesh Kumar</h3>
             <p class="affil">Associate Professor, Dept. of Computer Science & Engineering, IIT Roorkee, India</p>
@@ -120,7 +188,7 @@
         </article>
 
         <article class="person-card">
-          <img class="demo-img" src="images/abhyash.jpg" alt="speaker 5">
+          <img loading="lazy" class="demo-img" src="images/abhyash.jpg" alt="speaker 5">
           <div class="person-body">
             <h3>Dr. Abhay Kumar Sah</h3>
             <p class="affil">Associate Professor, Dept. of Electronics & Communication Engineering, IIT Roorkee, India</p>
@@ -129,7 +197,7 @@
         </article>
 
         <article class="person-card">
-          <img class="demo-img" src="images/pandey.jpeg" alt="speaker">
+          <img loading="lazy" class="demo-img" src="images/pandey.jpeg" alt="speaker">
           <div class="person-body">
             <h3>Dr. Pradumn K. Pandey</h3>
             <p class="affil">Associate Professor, Dept. of Computer Science & Engineering, IIT Roorkee, India</p>
@@ -139,7 +207,7 @@
 
 
         <article class="person-card">
-          <img class="demo-img" src="images/ekant.jpg" alt="speaker 7">
+          <img loading="lazy" class="demo-img" src="images/ekant.jpg" alt="speaker 7">
           <div class="person-body">
             <h3>Dr. Ekant Sharma</h3>
             <p class="affil">Assistant Professor, Dept. of Electronics & Communication Engineering, IIT Roorkee, India</p>
@@ -148,7 +216,7 @@
         </article>
 
         <article class="person-card">
-          <img class="demo-img" src="images/raghvendra.jpg" alt="speaker 6">
+          <img loading="lazy" class="demo-img" src="images/raghvendra.jpg" alt="speaker 6">
           <div class="person-body">
             <h3>Dr. Raghvendra Singh Rohit</h3>
             <p class="affil">Assistant Professor, Dept. of Computer Science & Engineering, IIT Roorkee, India</p>
@@ -157,7 +225,7 @@
         </article>
 
         <article class="person-card">
-          <img class="demo-img" src="images/jagyanshi.jpg" alt="speaker 7">
+          <img loading="lazy" class="demo-img" src="images/jagyanshi.jpg" alt="speaker 7">
           <div class="person-body">
             <h3>Dr. Jagnyashini Debadarshini</h3>
             <p class="affil">Assistant Professor, Dept. of Computer Science & Engineering, IIT Roorkee, India</p>
@@ -165,14 +233,96 @@
           </div>
         </article>
 
-        >
       </div>
 
     </div>
   </div>
 </section>
 
-  <section class="section">
+  <!-- ============ DAY 0: COMPLIMENTARY WORKSHOP (White Panel) ============ -->
+  <section class="section reveal">
+    <div class="wrap">
+      <div class="panel">
+        <div class="section-head center">
+          <span class="eyebrow">Complimentary for Registered Participants &middot; IEEE ANTS 2026</span>
+          <h2>Complimentary Workshop</h2>
+        </div>
+        <div class="prose" style="max-width: 760px; margin: 0 auto; text-align: center;">
+          <p>Registered participants get complimentary access to a <strong>welcome workshop</strong> — a relaxed session introducing the program, the speakers, and what's ahead across the three main days, plus an informal chance to meet visiting professors before the main workshop begins. This is separate from the SPARC/WS-06 collaborations happening alongside IEEE ANTS 2026; details on that will be shared closer to the date.</p>
+          <p>The hands-on UAV drone masterclass and the live V2X lecture are part of <strong>Day 4</strong> of the program — full timings will be posted once the schedule is finalized.</p>
+          <p><a class="webpage-link" href="https://ants2026.ieee-ants.org/ws-06-zero-trust-and-zero-knowledge-frameworks-next-generation-cyber-physical-systems-and-6g" target="_blank" rel="noopener">View the official WS-06 workshop page →</a></p>
+        </div>
+
+        <div class="section-head center" style="margin-top: clamp(2rem, 5vw, 3rem);">
+          <span class="eyebrow">Exclusive to This Workshop</span>
+          <h2 style="font-size: clamp(1.2rem, 2vw, 1.5rem);">Meet organizers you won't see in our main program</h2>
+        </div>
+        <div class="people-grid">
+          <article class="person-card">
+            <img loading="lazy" class="demo-img" src="images/rassmi.png" alt="Dr. Rashmi Chaudhry">
+            <div class="person-body">
+              <h3>Dr. Rashmi Chaudhry</h3>
+              <p class="affil">Assistant Professor, Dept. of Computer Science & Engineering, NSUT, India</p>
+              <a class="webpage-link" href="http://www.nsit.ac.in/faculty/rc1/" target="_blank" rel="noopener">Official webpage →</a>
+            </div>
+          </article>
+
+          <article class="person-card">
+            <img loading="lazy" class="demo-img" src="images/neha.png" alt="Dr. Neha Agrawal">
+            <div class="person-body">
+              <h3>Dr. Neha Agrawal</h3>
+              <p class="affil">Assistant Professor, South Asian University, India</p>
+              <a class="webpage-link" href="https://sau.int/faculty/neha-agrawal" target="_blank" rel="noopener">Official webpage →</a>
+              <div style="margin-top:0.4rem;"><a class="webpage-link" href="https://sau.int/department-of-computer-science-and-engineering/faculty-of-cs/" target="_blank" rel="noopener" style="font-size:0.85rem;">SAU CSE faculty listing →</a></div>
+            </div>
+          </article>
+
+          <article class="person-card">
+            <img loading="lazy" class="demo-img" src="images/Meenu-rani-Dey.jpg" alt="Dr. Meenu Rani Dey">
+            <div class="person-body">
+              <h3>Dr. Meenu Rani Dey</h3>
+              <p class="affil">Assistant Professor, Dept. of Computer Science & Engineering, IIIT Bhubaneswar, India</p>
+              <a class="webpage-link" href="https://www.iiit-bh.ac.in/category/faculty/" target="_blank" rel="noopener">Official webpage →</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ GLIMPSES / GALLERY SLIDESHOW (photos to be swapped in later) ============ -->
+  <section class="section-alt reveal">
+    <div class="wrap">
+      <div class="section-head center">
+        <span class="eyebrow">Glimpses</span>
+        <h2>From past sessions &amp; the campus</h2>
+      </div>
+
+      <div class="glimpse-slideshow" id="glimpseSlideshow">
+        <div class="glimpse-track">
+          <div class="glimpse-slide is-active">
+            <img loading="lazy" class="glimpse-img" src="images/pic0.jpg" alt="IIT Roorkee campus">
+          </div>
+          <div class="glimpse-slide">
+            <img loading="lazy" class="glimpse-img" src="images/pic1.jpg" alt="IIT Roorkee campus">
+          </div>
+          <div class="glimpse-slide">
+            <img loading="lazy" class="glimpse-img" src="images/pic2.jpg" alt="IIT Roorkee campus">
+          </div>
+          <div class="glimpse-slide">
+           <img loading="lazy" class="glimpse-img" src="images/pic3.jpg" alt="IIT Roorkee campus">
+          </div>
+        </div>
+
+        <button type="button" class="glimpse-zone glimpse-prev" aria-label="Previous photo"></button>
+        <button type="button" class="glimpse-zone glimpse-next" aria-label="Next photo"></button>
+
+        <div class="glimpse-dots" role="tablist" aria-label="Choose slide"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section reveal">
   <div class="wrap">
     <div class="section-head center">
       <span class="eyebrow">Meet The Team</span>
@@ -184,7 +334,7 @@
       <!-- Coordinator 1 — image LEFT, text RIGHT -->
       <div class="split-panel">
         <div class="split-media coordinator-media">
-          <img src="images/neetesh1.png" alt="Dr. Neetesh Kumar">
+          <img loading="lazy" src="images/neetesh1.png" alt="Dr. Neetesh Kumar">
         </div>
         <div class="prose">
           <h3>Dr. Neetesh Kumar</h3>
@@ -205,7 +355,7 @@
           <a class="webpage-link" href="https://iitr.ac.in/~ece/abhaysah">Official webpage →</a>
         </div>
         <div class="split-media coordinator-media">
-          <img src="images/abhay1.png" alt="Dr. Abhay Kumar Sah">
+          <img loading="lazy" src="images/abhay1.png" alt="Dr. Abhay Kumar Sah">
         </div>
       </div>
 
@@ -218,7 +368,7 @@
       <div class="wrap">
         <div class="panel panel-shade split-panel media-first">
           <div class="split-media logo-media">
-            <img src="images/sparc.png" alt="SPARC logo"
+            <img loading="lazy" src="images/sparc.png" alt="SPARC logo"
                  onerror="this.style.display='none'; this.parentNode.innerHTML='<span class=&quot;img-fallback&quot;>[SPARC Logo]</span>'">
           </div>
           <div>
@@ -250,14 +400,14 @@
             </div>
           </div>
           <div class="split-media">
-            <img src="images/iitr.avif" alt="IIT Roorkee campus"
+            <img loading="lazy" src="images/iitr.avif" alt="IIT Roorkee campus"
                  onerror="this.style.display='none'; this.parentNode.innerHTML='<span class=&quot;img-fallback&quot;>[Campus Photo]</span>'">
           </div>
         </div>
       </div>
     </section>
 
-   
+  </main>
 
   <!-- ============ FOOTER ============ -->
   <footer class="site-footer">
@@ -286,7 +436,9 @@
 </footer>
 
   <!-- JS Links -->
+  <script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
   <script src="js/include.js"></script>
   <script src="js/main.js"></script>
+  <script src="js/glimpse-slideshow.js"></script>
 </body>
 </html>

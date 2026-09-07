@@ -4,24 +4,25 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Register — AI for Secure 6G: Foundations of FL, XAI, and LLMs</title>
-<meta name="description" content="Register for AI for Secure 6G: Foundations of FL, XAI, and LLMs. Fill in your details and pay securely online via Razorpay to confirm your seat.">
+<meta name="description" content="Register for AI for Secure 6G: Foundations of FL, XAI, and LLMs. Fill in your details to reserve your seat — includes a complimentary Day 0 UAV drone masterclass, welcome kit, and global networking opportunities.">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%232563eb%27/%3E%3Ctext x=%2732%27 y=%2743%27 font-family=%27system-ui,sans-serif%27 font-size=%2730%27 font-weight=%27800%27 fill=%27%23ffffff%27 text-anchor=%27middle%27%3ES6%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="css/base.css">
 <meta name="view-transition" content="same-origin">
 </head>
 <body data-page="register">
+  <a href="#main-content" class="skip-link">Skip to main content</a>
 
 <!-- ============ HEADER INJECTION POINT ============ -->
 <div id="header-placeholder"></div>
 
-<main>
+<main id="main-content">
 
   <!-- ============ HERO SECTION ============ -->
   <section class="page-hero page-hero-tint">
     <div class="wrap">
       <span class="eyebrow">Registration</span>
       <h1>Register for AI for Secure 6G: Foundations of FL, XAI, and LLMs</h1>
-      <p class="subtitle" style="margin: 0 auto;">Fill in your details, choose your category, and pay securely online. Your seat is confirmed the moment payment is verified — no manual steps, no waiting.</p>
+      <p class="subtitle" style="margin: 0 auto;">Fill in your details and choose your category to reserve your seat. Registered participants get a complimentary Day 0 UAV drone masterclass, a welcome kit, high tea, and the chance to connect with international researchers.</p>
     </div>
   </section>
 
@@ -39,16 +40,21 @@
         <ol class="step-list" style="font-size: clamp(1.1rem, 1.5vw, 1.35rem); line-height: 1.8; margin-top: 1rem;">
           <li style="margin-bottom: 1.5rem;">Review the <a href="details.html">workshop details and fee structure</a> to confirm your registration category.</li>
           <li style="margin-bottom: 1.5rem;">Fill in the form with your details — the fee updates automatically based on your category.</li>
-          <li style="margin-bottom: 1.5rem;">Click <strong>Proceed to Payment</strong> and complete payment securely via Razorpay (cards, UPI, netbanking).</li>
-          <li>Your registration is confirmed instantly once payment succeeds — no receipt upload, no waiting for manual verification.</li>
+          <li style="margin-bottom: 1.5rem;">Click <strong>Submit Registration</strong> to reserve your seat.</li>
+          <li style="margin-bottom: 1.5rem;">A <strong>Pay via SBI Collect</strong> button will then appear — click it to open SBI's secure payment page in a new tab and complete your payment there.</li>
+          <li>Come back to this page, enter your SBI Collect reference number and payment date, and upload a screenshot of your payment confirmation to confirm your seat.</li>
         </ol>
 
         <div class="note-box" style="margin-top: 3rem; background: var(--white);">
-          <strong>Secure payments.</strong> All payments are processed by Razorpay. We never see or store your card, UPI, or banking details.
+          <strong>Included with registration.</strong> A complimentary Day 0 UAV drone masterclass, a welcome kit / gift hamper, high tea for on-campus participants, and the chance to connect with international researchers.
         </div>
 
         <div class="note-box" style="margin-top: 1.5rem; background: var(--white);">
-          <strong>Need help?</strong> If you experience any issues during payment or registration, please reach out via the <a href="contact.html">Contact page</a> and include the reference ID shown after payment, if you have one.
+          <strong>About SBI Collect.</strong> Payment is processed through SBI Collect, State Bank of India's official payment portal. You'll leave this site briefly to pay — keep the confirmation screenshot or the SMS/email receipt from your bank handy, as you'll need it for the next step.
+        </div>
+
+        <div class="note-box" style="margin-top: 1.5rem; background: var(--white);">
+          <strong>Need help?</strong> If you experience any issues during registration, please reach out via the <a href="contact.html">Contact page</a>.
         </div>
       </div>
 
@@ -140,24 +146,81 @@
           </div>
 
           <button type="submit" class="btn btn-primary" id="payBtn" style="margin-top: 0.5rem; width: 100%; font-size: 1.1rem; padding: 1rem;">
-            Proceed to Payment
+            Submit Registration
           </button>
 
           <div class="form-error" id="formError" hidden></div>
 
           <div class="form-submit-note">
-            Please double-check your email — your registration confirmation and any workshop updates will be sent there.
+            Please double-check your email — payment instructions (via SBI Collect) and any workshop updates will be sent there.
           </div>
 
         </form>
 
-        <!-- ============ SUCCESS STATE (shown after verified payment) ============ -->
+        <!-- ============ SUCCESS STATE (shown after registration is submitted) ============ -->
         <div class="reg-success" id="regSuccess" hidden>
           <div class="reg-success-icon">✓</div>
-          <h3>Registration confirmed</h3>
-          <p>Thanks, <span id="successName">there</span> — your payment has been verified and your seat for AI for Secure 6G: Foundations of FL, XAI, and LLMs is confirmed. A confirmation has been noted against <span id="successEmail">your email</span>.</p>
-          <p class="reg-success-id">Payment reference: <span id="successPaymentId">—</span></p>
-          <a class="btn btn-ghost" href="index.html">Back to home</a>
+          <h3>Registration received</h3>
+          <p>Thanks, <span id="successName">there</span> — we've received your registration for AI for Secure 6G: Foundations of FL, XAI, and LLMs, logged against <span id="successEmail">your email</span>.</p>
+          <p class="reg-success-id">One step left — complete your payment below to confirm your seat.</p>
+        </div>
+
+        <!-- ============ PAYMENT STEP (comes out of hiding once registration succeeds) ============ -->
+        <div class="payment-step reveal-pop" id="paymentStep" hidden>
+          <div class="payment-step-divider"></div>
+
+          <div class="payment-step-pay">
+            <span class="eyebrow">Step 1 — Pay</span>
+            <h3>Pay <span id="paymentDueAmount">₹0</span> via SBI Collect</h3>
+            <p>Click below to open SBI Collect's secure payment page in a new tab and complete your payment there. Keep the confirmation screenshot or bank SMS/email — you'll need it for the next step.</p>
+            <a class="btn btn-primary" id="sbiCollectBtn" href="https://www.onlinesbi.sbi/sbicollect/icollecthome.htm" target="_blank" rel="noopener" style="width:100%; text-align:center;">
+              Pay via SBI Collect ↗
+            </a>
+          </div>
+
+          <!-- ============ PROOF OF PAYMENT (kept below the SBI Collect button) ============ -->
+          <div class="payment-step-proof">
+            <span class="eyebrow">Step 2 — Confirm</span>
+            <h3>Submit your payment proof</h3>
+            <p>Once you've paid, fill this in so we can confirm your seat.</p>
+
+            <form id="paymentProofForm" novalidate>
+              <div class="form-row">
+                <label for="paymentRef">SBI Collect Reference Number</label>
+                <input type="text" id="paymentRef" name="paymentRef" required>
+              </div>
+
+              <div class="form-row">
+                <label for="paymentScreenshot">Payment Confirmation Screenshot</label>
+                <div class="file-drop" id="paymentScreenshotDrop">
+                  <input type="file" id="paymentScreenshot" name="paymentScreenshot" accept="image/*,.pdf" class="file-drop-input">
+                  <div class="file-drop-empty" id="paymentScreenshotEmpty">
+                    <span class="file-drop-icon">📎</span>
+                    <span>Upload your SBI Collect confirmation — JPG, PNG, or PDF, max 4 MB</span>
+                  </div>
+                  <div class="file-drop-filled" id="paymentScreenshotFilled" hidden>
+                    <span class="file-drop-check">✓</span>
+                    <span class="file-drop-name">Uploaded — <span id="paymentScreenshotFileName"></span></span>
+                    <span class="file-drop-change">Change</span>
+                  </div>
+                </div>
+                <span class="field-hint">Make sure the institution name, amount, and reference number are clearly visible.</span>
+              </div>
+
+              <button type="submit" class="btn btn-primary" id="paymentSubmitBtn" style="width: 100%; font-size: 1.05rem; padding: 0.9rem; margin-top: 0.5rem;">
+                Submit Payment Proof
+              </button>
+
+              <div class="form-error" id="paymentFormError" hidden></div>
+            </form>
+
+            <div class="reg-success" id="paymentSuccess" hidden>
+              <div class="reg-success-icon">✓</div>
+              <h3>Payment proof received</h3>
+              <p>We've logged your payment details — we'll verify them and confirm your seat shortly.</p>
+              <a class="btn btn-ghost" href="index.html">Back to home</a>
+            </div>
+          </div>
         </div>
 
       </div>
@@ -193,9 +256,9 @@
   </div>
 </footer>
 
+<script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
 <script src="js/include.js"></script>
 <script src="js/main.js"></script>
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script src="js/registration.js"></script>
 </body>
 </html>
