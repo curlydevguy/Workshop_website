@@ -68,7 +68,36 @@ async function uploadFile({ base64, fileName, namePrefix, folderId }) {
     }),
   });
 
-  const data = await res.json();
+  // Read the raw body as text FIRST instead of assuming it's JSON.
+  // Apps Script web apps can occasionally return an HTML page (Google
+  // interstitial, sign-in page, generic error page) instead of the JSON
+  // your script always returns — if that happens, res.json() throws a
+  // confusing "Unexpected token '<'" error with no useful context. This
+  // way we always know exactly what came back and from where.
+  const rawText = await res.text();
+
+  if (!res.ok) {
+    console.error(
+      `Apps Script proxy returned HTTP ${res.status}. First 300 chars of body:`,
+      rawText.slice(0, 300)
+    );
+    throw new Error(`Apps Script upload failed: HTTP ${res.status}`);
+  }
+
+  let data;
+  try {
+    data = JSON.parse(rawText);
+  } catch (parseErr) {
+    // This is the case you were hitting — log the actual HTML/text so we
+    // can see what Google sent back instead of guessing.
+    console.error(
+      "Apps Script proxy returned non-JSON content. First 300 chars of body:",
+      rawText.slice(0, 300)
+    );
+    throw new Error(
+      "Apps Script upload failed: response was not valid JSON (see server logs for raw body)"
+    );
+  }
 
   if (data.error) {
     throw new Error("Apps Script upload failed: " + data.error);
