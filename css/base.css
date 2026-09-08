@@ -1332,3 +1332,164 @@ html.lenis { scroll-behavior: auto !important; }
   .person-card .webpage-link:hover { transform: none; }
 }
 
+
+/* ==========================================================================
+   14. REGISTRATION PAGE REDESIGN — stepper, compact info, PDF guide CTA
+   ========================================================================== */
+
+/* ---- Progress stepper (Register -> Pay -> Confirm) ---- */
+.reg-stepper {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0;
+  max-width: 620px;
+  margin: 0 auto clamp(1.5rem, 4vw, 2.25rem);
+  padding: 0 1rem;
+}
+.reg-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 0 0 auto;
+  width: clamp(64px, 16vw, 110px);
+}
+.reg-step-num {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--white);
+  border: 2px solid var(--gray-border);
+  color: var(--text-soft);
+  font-weight: 800;
+  font-size: 1.02rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.35s ease, border-color 0.35s ease, color 0.35s ease, box-shadow 0.35s ease;
+}
+.reg-step-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-soft);
+  text-align: center;
+  transition: color 0.35s ease;
+}
+.reg-step.is-active .reg-step-num {
+  background: var(--primary-blue);
+  border-color: var(--primary-blue);
+  color: var(--white);
+  box-shadow: 0 0 0 5px rgba(37, 99, 235, 0.14);
+}
+.reg-step.is-active .reg-step-label { color: var(--text-dark); }
+.reg-step.is-done .reg-step-num { background: #16a34a; border-color: #16a34a; color: var(--white); }
+.reg-step.is-done .reg-step-label { color: #16a34a; }
+.reg-step-line {
+  flex: 1 1 auto;
+  height: 2px;
+  background: var(--gray-border);
+  margin: 19px -6px 0;
+  transition: background-color 0.35s ease;
+}
+.reg-step-line.is-done { background: #16a34a; }
+@media (max-width: 480px) {
+  .reg-step-num { width: 30px; height: 30px; font-size: 0.88rem; }
+  .reg-step-label { font-size: 0.7rem; }
+  .reg-step-line { margin-top: 15px; }
+}
+
+/* ---- Consolidated "good to know" list (replaces stacked note-boxes) ---- */
+.info-compact {
+  background: var(--white);
+  border: 1px solid var(--gray-border);
+  border-radius: var(--radius);
+  padding: clamp(1.1rem, 2.5vw, 1.4rem) clamp(1.1rem, 2.5vw, 1.5rem);
+  box-shadow: var(--shadow-sm);
+}
+.info-compact-item {
+  display: flex;
+  gap: 0.85rem;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid var(--gray-border);
+}
+.info-compact-item:first-child { padding-top: 0; }
+.info-compact-item:last-child { padding-bottom: 0; border-bottom: none; }
+.info-compact-icon {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--gray-light);
+  color: var(--primary-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+.info-compact-text strong {
+  display: block;
+  color: var(--text-dark);
+  font-size: 0.92rem;
+  margin-bottom: 0.15rem;
+}
+.info-compact-text span {
+  display: block;
+  color: var(--text-main);
+  font-size: 0.87rem;
+  line-height: 1.55;
+}
+
+/* ---- PDF payment-guide call to action ---- */
+.pdf-guide {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  background: linear-gradient(135deg, #eff6ff, #f8fafc);
+  border: 1px solid #bfdbfe;
+  border-radius: var(--radius-sm);
+  padding: 0.9rem 1.1rem;
+  text-decoration: none;
+  transition: transform 0.3s var(--ease-out-soft), box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.pdf-guide:hover { transform: translateY(-3px); box-shadow: var(--shadow-sm); border-color: var(--primary-blue); }
+.pdf-guide-icon {
+  flex: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: var(--primary-blue);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+.pdf-guide-text { flex: 1 1 auto; min-width: 0; }
+.pdf-guide-text strong { display: block; color: var(--text-dark); font-size: 0.93rem; }
+.pdf-guide-text span { display: block; color: var(--text-soft); font-size: 0.8rem; margin-top: 0.1rem; }
+.pdf-guide-arrow { flex: none; color: var(--primary-blue); font-weight: 700; font-size: 1.1rem; }
+
+/* ---- Cleaner numbered step list (How to register) ---- */
+.reg-steps-list { display: flex; flex-direction: column; gap: 1.1rem; }
+.reg-steps-item { display: flex; gap: 0.85rem; }
+.reg-steps-badge {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--gray-light);
+  color: var(--primary-blue-dark);
+  font-weight: 700;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.1rem;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+.reg-steps-item:hover .reg-steps-badge { background: var(--primary-blue); color: var(--white); }
+.reg-steps-text { color: var(--text-main); line-height: 1.6; font-size: clamp(0.95rem, 1.3vw, 1.05rem); }
+.reg-steps-text a { color: var(--primary-blue); font-weight: 600; text-decoration: none; }
+.reg-steps-text a:hover { text-decoration: underline; }

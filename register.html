@@ -26,6 +26,28 @@
     </div>
   </section>
 
+  <!-- ============ PROGRESS STEPPER ============ -->
+  <section class="section-alt" style="padding-bottom: 0;">
+    <div class="wrap">
+      <div class="reg-stepper" id="regStepper">
+        <div class="reg-step is-active" data-step="1">
+          <span class="reg-step-num">1</span>
+          <span class="reg-step-label">Register</span>
+        </div>
+        <div class="reg-step-line" id="regStepLine1"></div>
+        <div class="reg-step" data-step="2">
+          <span class="reg-step-num">2</span>
+          <span class="reg-step-label">Pay</span>
+        </div>
+        <div class="reg-step-line" id="regStepLine2"></div>
+        <div class="reg-step" data-step="3">
+          <span class="reg-step-num">3</span>
+          <span class="reg-step-label">Confirm</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ============ SIDE-BY-SIDE LAYOUT ============ -->
   <section class="section-alt reveal">
     <div class="wrap details-grid-2">
@@ -37,24 +59,62 @@
           <h2>How to register</h2>
         </div>
 
-        <ol class="step-list" style="font-size: clamp(1.1rem, 1.5vw, 1.35rem); line-height: 1.8; margin-top: 1rem;">
-          <li style="margin-bottom: 1.5rem;">Review the <a href="details.html">workshop details and fee structure</a> to confirm your registration category.</li>
-          <li style="margin-bottom: 1.5rem;">Fill in the form with your details — the fee updates automatically based on your category.</li>
-          <li style="margin-bottom: 1.5rem;">Click <strong>Submit Registration</strong> to reserve your seat.</li>
-          <li style="margin-bottom: 1.5rem;">A <strong>Pay via SBI Collect</strong> button will then appear — click it to open SBI's secure payment page in a new tab and complete your payment there.</li>
-          <li>Come back to this page, enter your SBI Collect reference number and payment date, and upload a screenshot of your payment confirmation to confirm your seat.</li>
+        <ol class="reg-steps-list">
+          <li class="reg-steps-item">
+            <span class="reg-steps-badge">1</span>
+            <span class="reg-steps-text">Review the <a href="details.html">workshop details and fee structure</a> to confirm your registration category.</span>
+          </li>
+          <li class="reg-steps-item">
+            <span class="reg-steps-badge">2</span>
+            <span class="reg-steps-text">Fill in the form with your details — the fee updates automatically based on your category.</span>
+          </li>
+          <li class="reg-steps-item">
+            <span class="reg-steps-badge">3</span>
+            <span class="reg-steps-text">Click <strong>Submit Registration</strong> to reserve your seat.</span>
+          </li>
+          <li class="reg-steps-item">
+            <span class="reg-steps-badge">4</span>
+            <span class="reg-steps-text">A <strong>Pay via SBI Collect</strong> button will then appear — click it to open SBI's secure payment page in a new tab and complete your payment there.</span>
+          </li>
+          <li class="reg-steps-item">
+            <span class="reg-steps-badge">5</span>
+            <span class="reg-steps-text">Come back to this page, enter your SBI Collect reference number and payment date, and upload a screenshot of your payment confirmation to confirm your seat.</span>
+          </li>
         </ol>
 
-        <div class="note-box" style="margin-top: 3rem; background: var(--white);">
-          <strong>Included with registration.</strong> A complimentary Day 0 UAV drone masterclass, a welcome kit / gift hamper, high tea for on-campus participants, and the chance to connect with international researchers.
-        </div>
+        <!-- ============ PDF PAYMENT GUIDE ============ -->
+        <a class="pdf-guide" href="assets/payment-guide.pdf" target="_blank" rel="noopener" style="margin-top: 1.75rem;">
+          <span class="pdf-guide-icon">📄</span>
+          <span class="pdf-guide-text">
+            <strong>Payment guide (PDF)</strong>
+            <span>Step-by-step walkthrough of paying via SBI Collect</span>
+          </span>
+          <span class="pdf-guide-arrow">↓</span>
+        </a>
 
-        <div class="note-box" style="margin-top: 1.5rem; background: var(--white);">
-          <strong>About SBI Collect.</strong> Payment is processed through SBI Collect, State Bank of India's official payment portal. You'll leave this site briefly to pay — keep the confirmation screenshot or the SMS/email receipt from your bank handy, as you'll need it for the next step.
-        </div>
-
-        <div class="note-box" style="margin-top: 1.5rem; background: var(--white);">
-          <strong>Need help?</strong> If you experience any issues during registration, please reach out via the <a href="contact.html">Contact page</a>.
+        <!-- ============ CONSOLIDATED INFO PANEL (replaces 3 stacked note-boxes) ============ -->
+        <div class="info-compact" style="margin-top: 1.75rem;">
+          <div class="info-compact-item">
+            <span class="info-compact-icon">🎁</span>
+            <span class="info-compact-text">
+              <strong>Included with registration</strong>
+              <span>A complimentary Day 0 UAV drone masterclass, a welcome kit / gift hamper, high tea for on-campus participants, and the chance to connect with international researchers.</span>
+            </span>
+          </div>
+          <div class="info-compact-item">
+            <span class="info-compact-icon">🏦</span>
+            <span class="info-compact-text">
+              <strong>About SBI Collect</strong>
+              <span>Payment is processed through SBI Collect, State Bank of India's official payment portal. You'll leave this site briefly to pay — keep the confirmation screenshot or the SMS/email receipt from your bank handy, as you'll need it for the next step.</span>
+            </span>
+          </div>
+          <div class="info-compact-item">
+            <span class="info-compact-icon">💬</span>
+            <span class="info-compact-text">
+              <strong>Need help?</strong>
+              <span>If you experience any issues during registration, please reach out via the <a href="contact.html">Contact page</a>.</span>
+            </span>
+          </div>
         </div>
       </div>
 
@@ -176,6 +236,16 @@
             <a class="btn btn-primary" id="sbiCollectBtn" href="https://www.onlinesbi.sbi/sbicollect/icollecthome.htm" target="_blank" rel="noopener" style="width:100%; text-align:center;">
               Pay via SBI Collect ↗
             </a>
+
+            <!-- ============ PDF PAYMENT GUIDE (repeated here — right where it's needed) ============ -->
+            <a class="pdf-guide" href="assets/payment-guide.pdf" target="_blank" rel="noopener" style="margin-top: 0.5rem;">
+              <span class="pdf-guide-icon">📄</span>
+              <span class="pdf-guide-text">
+                <strong>Not sure what to select on SBI Collect?</strong>
+                <span>Open the step-by-step payment guide (PDF)</span>
+              </span>
+              <span class="pdf-guide-arrow">↓</span>
+            </a>
           </div>
 
           <!-- ============ PROOF OF PAYMENT (kept below the SBI Collect button) ============ -->
@@ -260,5 +330,44 @@
 <script src="js/include.js"></script>
 <script src="js/main.js"></script>
 <script src="js/registration.js"></script>
+
+<!-- ============ STEPPER SYNC (purely visual — watches the same hidden attributes registration.js already toggles) ============ -->
+<script>
+(function () {
+  var step2 = document.querySelector('.reg-step[data-step="2"]');
+  var step3 = document.querySelector('.reg-step[data-step="3"]');
+  var line1 = document.getElementById('regStepLine1');
+  var line2 = document.getElementById('regStepLine2');
+  var step1 = document.querySelector('.reg-step[data-step="1"]');
+
+  var paymentStep = document.getElementById('paymentStep');
+  var paymentSuccess = document.getElementById('paymentSuccess');
+
+  function activate(step) {
+    if (step === 2) {
+      step1.classList.remove('is-active');
+      step1.classList.add('is-done');
+      step2.classList.add('is-active');
+      line1.classList.add('is-done');
+    } else if (step === 3) {
+      step2.classList.remove('is-active');
+      step2.classList.add('is-done');
+      step3.classList.add('is-active');
+      line2.classList.add('is-done');
+    }
+  }
+
+  function watch(el, onShow) {
+    if (!el) return;
+    var mo = new MutationObserver(function () {
+      if (!el.hasAttribute('hidden')) onShow();
+    });
+    mo.observe(el, { attributes: true, attributeFilter: ['hidden'] });
+  }
+
+  watch(paymentStep, function () { activate(2); });
+  watch(paymentSuccess, function () { activate(3); });
+})();
+</script>
 </body>
 </html>
