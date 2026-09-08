@@ -670,7 +670,12 @@ h1, h2, h3 { color: var(--text-dark); line-height: 1.2; text-wrap: balance; }
   transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 .file-drop:hover { border-color: var(--primary-blue); }
-.file-drop.has-file { border-style: solid; border-color: #15803d; background: #f0fdf4; }
+.file-drop.has-file {
+  border-style: solid;
+  border-color: #86efac;
+  background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+  cursor: default;
+}
 .file-drop-input {
   position: absolute;
   inset: 0;
@@ -679,6 +684,7 @@ h1, h2, h3 { color: var(--text-dark); line-height: 1.2; text-wrap: balance; }
   opacity: 0;
   cursor: pointer;
 }
+.file-drop.has-file .file-drop-input { cursor: default; }
 .file-drop-empty {
   display: flex;
   align-items: center;
@@ -687,25 +693,63 @@ h1, h2, h3 { color: var(--text-dark); line-height: 1.2; text-wrap: balance; }
   font-size: 0.92rem;
 }
 .file-drop-icon { font-size: 1.05rem; }
+
+/* ---- Uploaded / success state ---- */
 .file-drop-filled {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  font-size: 0.92rem;
+  gap: 0.75rem;
 }
-.file-drop-check { color: #15803d; font-weight: 700; }
-.file-drop-name {
-  font-weight: 600;
-  color: var(--text-dark);
-  overflow-wrap: anywhere;
+.file-drop-check-badge {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #16a34a;
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+  font-weight: 800;
+  box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.12);
+}
+.file-drop-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+.file-drop-status {
+  color: #15803d;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+.file-drop-filename {
+  display: block;
+  color: var(--text-soft);
+  font-size: 0.79rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: min(60vw, 260px);
 }
 .file-drop-change {
   margin-left: auto;
-  color: var(--primary-blue);
+  flex: none;
+  color: var(--white);
+  background: var(--primary-blue);
   font-weight: 600;
-  font-size: 0.85rem;
-  text-decoration: underline;
+  font-size: 0.78rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  text-decoration: none;
+  pointer-events: none; /* the invisible file input already covers the whole box and stacks above
+                            this (absolute always paints above static siblings) — this is purely
+                            visual, so it must NOT intercept the click meant for that input */
+  transition: background-color 0.2s ease, transform 0.2s ease;
 }
+.file-drop.has-file:hover .file-drop-change { background: var(--primary-blue-dark); transform: translateY(-1px); }
 #idProofCheckStatus { display: block; margin-top: 0.4rem; }
 #idProofCheckStatus.is-checking { color: var(--text-soft); }
 #idProofCheckStatus.is-ok { color: #15803d; font-weight: 600; }
@@ -1471,6 +1515,19 @@ html.lenis { scroll-behavior: auto !important; }
 .pdf-guide-text span { display: block; color: var(--text-soft); font-size: 0.8rem; margin-top: 0.1rem; }
 .pdf-guide-arrow { flex: none; color: var(--primary-blue); font-weight: 700; font-size: 1.1rem; }
 
+/* ---- Lightweight inline variant (used right under the Pay button — no box, less heavy) ---- */
+.pdf-guide-inline {
+  font-size: 0.83rem;
+  color: var(--text-soft);
+  line-height: 1.5;
+}
+.pdf-guide-inline a {
+  color: var(--primary-blue);
+  font-weight: 600;
+  text-decoration: none;
+}
+.pdf-guide-inline a:hover { text-decoration: underline; }
+
 /* ---- Cleaner numbered step list (How to register) ---- */
 .reg-steps-list { display: flex; flex-direction: column; gap: 1.1rem; }
 .reg-steps-item { display: flex; gap: 0.85rem; }
@@ -1493,3 +1550,95 @@ html.lenis { scroll-behavior: auto !important; }
 .reg-steps-text { color: var(--text-main); line-height: 1.6; font-size: clamp(0.95rem, 1.3vw, 1.05rem); }
 .reg-steps-text a { color: var(--primary-blue); font-weight: 600; text-decoration: none; }
 .reg-steps-text a:hover { text-decoration: underline; }
+
+/* ==========================================================================
+   15. REGISTRATION PAGE VISUAL REFRESH v2
+   ========================================================================== */
+
+/* ---- BUG FIX: "Uploaded" state showing before any file was chosen.
+   .file-drop-empty / .file-drop-filled set display:flex unconditionally.
+   Author CSS beats the browser's built-in [hidden]{display:none} at equal
+   specificity, so the filled ("Uploaded ✓") box was visible on load even
+   though it carried the hidden attribute. This restores it. ---- */
+.file-drop-empty[hidden],
+.file-drop-filled[hidden] { display: none; }
+
+/* ---- Stepper becomes a floating card instead of three dots on bare page ---- */
+.reg-stepper {
+  background: var(--white);
+  border: 1px solid var(--gray-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: clamp(1.1rem, 3vw, 1.5rem) clamp(1rem, 4vw, 2rem);
+  max-width: 560px;
+}
+
+/* ---- Instructions column: an actual tint (it was pure white before,
+   despite being called "panel-shade"), and sticky on desktop so it stays
+   in view while the form is filled in. ---- */
+.panel-shade {
+  background: linear-gradient(165deg, #eff6ff 0%, #f8fafc 55%, var(--white) 100%);
+  border-color: #dbeafe;
+}
+@media (min-width: 769px) {
+  .panel-shade { position: sticky; top: 96px; align-self: start; }
+}
+
+/* ---- Small uppercase captions to break the form into readable groups ---- */
+.form-section-caption {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--primary-blue-dark);
+  margin-bottom: 0.15rem;
+}
+.form-section-caption::before {
+  content: "";
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--primary-blue);
+  flex: none;
+}
+
+/* ---- Bigger, friendlier file-drop zones ---- */
+.file-drop { padding: 1.1rem 1.25rem; border-width: 2px; }
+.file-drop-icon {
+  width: 32px; height: 32px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  background: var(--white);
+  border: 1px solid var(--gray-border);
+  font-size: 0.95rem;
+}
+
+/* ---- Fee summary becomes the visual anchor right before the submit button ---- */
+.fee-summary {
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  border: 1.5px solid #93c5fd;
+  border-radius: var(--radius);
+  padding: 1.1rem 1.4rem;
+  box-shadow: var(--shadow-sm);
+}
+.fee-summary-amount { font-size: 1.7rem; }
+
+/* ---- Payment step: two clearly separated tinted panels instead of plain
+   stacked text, so "Pay" and "Confirm" read as distinct actions ---- */
+.payment-step-divider {
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary-blue), var(--maroon));
+  border-radius: 999px;
+  opacity: 0.18;
+}
+.payment-step-pay, .payment-step-proof {
+  padding: clamp(1.1rem, 3vw, 1.5rem);
+  border-radius: var(--radius);
+  border: 1px solid var(--gray-border);
+}
+.payment-step-pay {
+  background: linear-gradient(150deg, #eff6ff, var(--white));
+  border-color: #bfdbfe;
+}
+.payment-step-proof { background: var(--gray-light); }
