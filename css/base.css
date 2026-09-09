@@ -1573,15 +1573,18 @@ html.lenis { scroll-behavior: auto !important; }
   max-width: 560px;
 }
 
-/* ---- Instructions column: an actual tint (it was pure white before,
-   despite being called "panel-shade"), and sticky on desktop so it stays
-   in view while the form is filled in. ---- */
-.panel-shade {
+/* ---- Instructions column on the register page only: an actual tint (it
+   was pure white before, despite being called "panel-shade"), and sticky
+   on desktop so it stays in view while the form is filled in.
+   Scoped to body[data-page="register"] because .panel-shade is a shared
+   class reused on details.html — making it sticky/tinted site-wide broke
+   the Focus Areas / What's Included / Fee panels there. ---- */
+body[data-page="register"] .panel-shade {
   background: linear-gradient(165deg, #eff6ff 0%, #f8fafc 55%, var(--white) 100%);
   border-color: #dbeafe;
 }
 @media (min-width: 769px) {
-  .panel-shade { position: sticky; top: 96px; align-self: start; }
+  body[data-page="register"] .panel-shade { position: sticky; top: 96px; align-self: start; }
 }
 
 /* ---- Small uppercase captions to break the form into readable groups ---- */
