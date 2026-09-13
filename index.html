@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI for 6G Security</title>
+
+  <!-- CSS Links -->
+  <meta name="description" content="AI for 6G Security — a SPARC Sponsored Lab, Indo-international hybrid workshop hosted at IIT Roorkee. Explore federated learning, explainable AI, and large language models (LLMs).">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%232563eb%27/%3E%3Ctext x=%2732%27 y=%2743%27 font-family=%27system-ui,sans-serif%27 font-size=%2730%27 font-weight=%27800%27 fill=%27%23ffffff%27 text-anchor=%27middle%27%3ES6%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/base.css">
+  <meta name="view-transition" content="same-origin">
+</head>
+<body data-page="home">
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- ============ HEADER INJECTION POINT ============ -->
+  <div id="header-placeholder"></div>
+
+  <!-- ============ MAIN CONTENT ============ -->
+  <main id="main-content">
+
+    <!-- ============ HERO ============ -->
+    <section class="hero hero-tint">
+
+      <!-- EDIT ME: letterhead band — full-width strip with the two org
+           logos plus their full names, like an actual event letterhead.
+           This is now a structural part of the hero, not a row of images
+           stacked on top of the headline. Swap logo paths/names below. -->
+      <div class="hero-letterhead">
+        <div class="wrap hero-letterhead-inner">
+          <div class="hero-org">
+            <span class="hero-org-text"><span class="hero-org-eyebrow">Hosted by</span><span class="hero-org-name">Indian Institute of<br>Technology Roorkee</span></span>
+            <img loading="lazy" src="images/iitr-logo.webp" alt="IIT Roorkee logo" class="org-logo org-logo-iitr">
+          </div>
+          <span class="hero-org-divider" aria-hidden="true"></span>
+          <div class="hero-org hero-org-center">
+            <img loading="lazy" src="images/iee.png" alt="IEEE ANTS 2026 logo" class="org-logo org-logo-ants">
+          </div>
+          <span class="hero-org-divider" aria-hidden="true"></span>
+          <div class="hero-org hero-org-right">
+            <span class="hero-org-text"><span class="hero-org-eyebrow">Sponsored by</span><span class="hero-org-name">Scheme for Promotion of<br>Academic &amp; Research Collaboration</span></span>
+            <img loading="lazy" src="images/sparc-transparent.png" alt="SPARC logo" class="org-logo org-logo-sparc">
+          </div>
+        </div>
+      </div>
+
+      <div class="wrap">
+
+        <!--
+          ====================================================================
+          HERO HOOK — EDIT ME
+          To change the headline: edit the <h1> below. Anything inside
+          <span class="hero-accent">...</span> gets the coral highlight
+          color — move that span around any words you want to pop.
+          To change the kicker tag (top small line): edit .hero-kicker text.
+          ====================================================================
+        -->
+        <div class="hero-intro">
+          <div class="hero-kicker">SPARC Sponsored Lab &nbsp;·&nbsp; IIT Roorkee &nbsp;·&nbsp; 20&ndash;24 December 2026</div>
+
+          <h1>A 25-Hour Course on AI for Secure 6G, <span class="hero-accent">Sponsored by SPARC</span></h1>
+          <p class="subtitle">Learn straight from researchers building the defenses next-gen networks will run on. Four days of keynotes, hands-on labs, and real exercises in federated learning, explainable AI, large language models (LLMs), and UAV autonomy — plus a certificate to prove you did the work.</p>
+
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="register.html">Claim your seat</a>
+            <a class="btn btn-ghost" href="details.html">View workshop details &amp; fee</a>
+          </div>
+          <p class="hero-urgency">Seats are limited &nbsp;·&nbsp; Certificate of participation included</p>
+        </div>
+
+        <!-- Hero Notice — glass strip that sits on the dark hero bg,
+             icon + label/value pairs divided by hairlines instead of a
+             wide grid with empty gaps. Edit the three .cell blocks to
+             change dates/mode/convener; swap the inline SVG paths for
+             different icons if needed. -->
+        <div class="panel panel-shade hero-notice">
+          <div class="highlight-strip">
+            <div class="cell">
+              <span class="cell-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+              <div class="cell-text">
+                <div class="label">Dates</div>
+                <div class="value">20–24 December 2026</div>
+              </div>
+            </div>
+            <div class="cell">
+              <span class="cell-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span>
+              <div class="cell-text">
+                <div class="label">Mode</div>
+                <div class="value">On-campus</div>
+              </div>
+            </div>
+            <div class="cell">
+              <span class="cell-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span>
+              <div class="cell-text">
+                <div class="label">Convener</div>
+                <div class="value">Dr. Neetesh Kumar</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ============ OVERVIEW (White Panel) ============ -->
+    <section class="section reveal">
+      <div class="wrap">
+        <div class="panel split-panel">
+          <div>
+            <div class="section-head">
+              <span class="eyebrow">Overview</span>
+              <h2>Why AI for 6G security</h2>
+            </div>
+            <div class="prose">
+              <p>As 6G networks move toward software-defined, densely connected, and increasingly autonomous architectures, they inherit a much larger attack surface than earlier generations — spanning the radio access network, network slices, and the AI models now embedded inside the network stack itself. Securing this environment calls for AI-native defenses, not just AI-aware ones.</p>
+              <p>AI for 6G Security brings together researchers, practitioners, and students to explore how techniques such as federated learning, explainable AI, and large language models can be applied to detect threats, harden network intelligence, and build trust into 6G systems — while also examining the new vulnerabilities that AI itself introduces into the network.</p>
+            </div>
+            <div class="chip-row">
+              <span class="chip">Federated Learning for 6G</span>
+              <span class="chip">Explainable AI (XAI)</span>
+              <span class="chip">Large Language Models (LLMs)</span>
+            </div>
+          </div>
+          <div class="split-media">
+            <img loading="lazy" src="images/hero-bg.jpg" alt="overview illustration"
+                 onerror="this.style.display='none'; this.parentNode.innerHTML='<span class=&quot;img-fallback&quot;>[Overview Image]</span>'">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PROGRAM AT A GLANCE (day-by-day teaser) ============ -->
+    <section class="section-alt reveal">
+      <div class="wrap">
+        <div class="section-head center">
+          <span class="eyebrow">20-Hour Program</span>
+          <h2>What the four days look like</h2>
+          <p>The full timestamped agenda is still being finalized — here's the shape of the program. <a href="schedule.html">Check the schedule page →</a></p>
+        </div>
+        <!--
+          ====================================================================
+          4-DAY PROGRAM CARDS — EDIT ME
+          Same panel/perk-card format as the "Why You Should Join" section
+          below, so the two sections read as one consistent family.
+          Each card is one <div class="panel perk-card">...</div>.
+          To change a day: edit its emoji (the <div class="perk-icon">),
+          its title <h3>, or its description <p>.
+          To add or remove a day, copy/delete one whole card block —
+          the grid auto-adjusts to however many cards are inside it.
+          Day 0 (the complimentary welcome workshop) is covered separately
+          below and isn't counted as one of the four main program days.
+          ====================================================================
+        -->
+        <div class="perks-grid">
+          <div class="panel perk-card">
+            <div class="perk-icon">🤝</div>
+            <h3>Day 1 &middot; Foundations of Federated Learning</h3>
+            <p>Privacy-preserving, distributed model training across network edges and devices. 20 Dec.</p>
+          </div>
+
+          <div class="panel perk-card">
+            <div class="perk-icon">🔍</div>
+            <h3>Day 2 &middot; Explainable AI (XAI)</h3>
+            <p>Making AI-driven security decisions interpretable and auditable. 21 Dec.</p>
+          </div>
+
+          <div class="panel perk-card">
+            <div class="perk-icon">🛡️</div>
+            <h3>Day 3 &middot; Large Language Models (LLMs)</h3>
+            <p>Risks and defenses for large language models used in network operations and tooling. 22 Dec.</p>
+          </div>
+
+          <div class="panel perk-card">
+            <div class="perk-icon">🚁</div>
+            <h3>Day 4 &middot; UAV Drone Masterclass</h3>
+            <p>Hands-on drone programming and flight session, capping off the core FL/XAI/LLM sessions with a real-world autonomy application. 23 Dec.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ WHY YOU SHOULD JOIN (Perks Grid) ============ -->
+    <section class="section-alt reveal">
+      <div class="wrap">
+        <div class="section-head center">
+          <span class="eyebrow">Why Attend</span>
+          <h2>Why you should join this workshop</h2>
+        </div>
+
+        <div class="perks-grid">
+          <div class="panel perk-card">
+            <div class="perk-icon">🔬</div>
+            <h3>Hands-On Experiments</h3>
+            <p>Work on live experiments and lab demonstrations, gaining direct hands-on exposure to real AI-for-6G-security research setups.</p>
+          </div>
+
+          <div class="panel perk-card">
+            <div class="perk-icon">🌐</div>
+            <h3>Global Exposure</h3>
+            <p>Take part in a SPARC-backed, India–international hybrid program, gaining exposure to global research practices and standards.</p>
+          </div>
+
+          <div class="panel perk-card">
+            <div class="perk-icon">🎤</div>
+            <h3>Expert Talks</h3>
+            <p>Hear curated talks from leading researchers and industry experts on the latest advances shaping AI for 6G security.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ WHY JOIN (Perks Grid) ============ -->
+    <section class="section reveal">
+      <div class="wrap">
+        <div class="section-head center">
+          <span class="eyebrow">For PhD Scholars, Post-Docs &amp; Researchers</span>
+          <h2>More than a workshop — a chance to connect globally</h2>
+        </div>
+
+        <div class="perks-grid">
+          <div class="panel perk-card">
+            <div class="perk-icon">🌍</div>
+            <h3>Global Networking</h3>
+            <p>Connect with renowned international professors, researchers, and fellow scholars while expanding your academic network. Exchange ideas, discover future collaborations, and build meaningful relationships with experts shaping the future of AI and 6G technologies.</p>
+          </div>
+
+          <div class="panel perk-card">
+            <div class="perk-icon">🚁</div>
+            <h3>Complimentary Welcome Workshop</h3>
+            <p>Registered participants receive exclusive complimentary access to a special welcome workshop on 20 December 2026, featuring distinguished speakers, insightful discussions, and early networking opportunities before the main program begins.</p>
+          </div>
+
+          <div class="panel perk-card">
+            <div class="perk-icon">🎁</div>
+            <h3>Welcome Kit &amp; High Tea</h3>
+            <p>Every on-campus participant receives a thoughtfully curated welcome kit along with refreshments and high tea during networking breaks, creating a professional, comfortable, and engaging conference experience throughout the workshop.</p>
+          </div>
+
+          <div class="panel perk-card">
+            <div class="perk-icon">🏨</div>
+            <h3>Stay &amp; Food Arranged</h3>
+            <p>Comfortable on-campus accommodation and meals are available for outstation participants — just pick your check-in/check-out dates at registration, at ₹700/night.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+     <!-- ============ SPEAKERS (Shaded Panel) ============ -->
+<section class="section-alt reveal">
+  <div class="wrap">
+    <div class="panel panel-shade">
+      
+      <div class="section-head center">
+        <span class="eyebrow">Distinguished Speakers</span>
+        <h2>Who's speaking</h2>
+      </div>
+
+      <div class="people-grid" id="speakers-grid">
+        <article class="person-card">
+          <img loading="lazy" class="demo-img" src="images/Dushantha.jpg" alt="Prof. Dushantha Nalin K Jayakody">
+          <div class="person-body">
+            <h3>Prof. Dushantha Nalin K Jayakody</h3>
+            <p class="affil">Professor, Lusófona University, Portugal</p>
+            <a class="webpage-link" href="https://scholar.google.com/citations?user=cFeFzQwAAAAJ&hl=en">Official webpage →</a>
+          </div>
+        </article>
+
+        <article class="person-card">
+          <img loading="lazy" class="demo-img" src="images/Madhusanka.jpg" alt="Prof. Madhusanka Liyanage">
+          <div class="person-body">
+            <h3>Prof. Madhusanka Liyanage</h3>
+            <p class="affil">Professor & Ad Astra Fellow, School of Computer Science, University College Dublin, Ireland</p>
+            <a class="webpage-link" href="https://www.madhusanka.com/">Official webpage →</a>
+          </div>
+        </article>
+
+        <article class="person-card">
+          <img loading="lazy" class="demo-img" src="images/neetesh.jpeg" alt="speaker 4">
+          <div class="person-body">
+            <h3>Dr. Neetesh Kumar</h3>
+            <p class="affil">Associate Professor, Dept. of Computer Science & Engineering, IIT Roorkee, India</p>
+            <a class="webpage-link" href="https://neeteshkumariitr.netlify.app/">Official webpage →</a>
+          </div>
+        </article>
+
+        <article class="person-card">
+          <img loading="lazy" class="demo-img" src="images/abhyash.jpg" alt="speaker 5">
+          <div class="person-body">
+            <h3>Dr. Abhay Kumar Sah</h3>
+            <p class="affil">Associate Professor, Dept. of Electronics & Communication Engineering, IIT Roorkee, India</p>
+            <a class="webpage-link" href="https://iitr.ac.in/~ece/abhaysah">Official webpage →</a>
+          </div>
+        </article>
+
+        <article class="person-card">
+          <img loading="lazy" class="demo-img" src="images/pandey.jpeg" alt="speaker">
+          <div class="person-body">
+            <h3>Dr. Pradumn K. Pandey</h3>
+            <p class="affil">Associate Professor, Dept. of Computer Science & Engineering, IIT Roorkee, India</p>
+            <a class="webpage-link" href="https://iitr.ac.in/Departments/Computer%20Science%20and%20Engineering%20Department/People/Faculty/100871.html">Official webpage →</a>
+          </div>
+        </article>
+
+
+        <article class="person-card">
+          <img loading="lazy" class="demo-img" src="images/ekant.jpg" alt="speaker 7">
+          <div class="person-body">
+            <h3>Dr. Ekant Sharma</h3>
+            <p class="affil">Assistant Professor, Dept. of Electronics & Communication Engineering, IIT Roorkee, India</p>
+            <a class="webpage-link" href="https://ekant.ece.iitr.ac.in/">Official webpage →</a>
+          </div>
+        </article>
+
+        <article class="person-card">
+          <img loading="lazy" class="demo-img" src="images/raghvendra.webp" alt="speaker 6">
+          <div class="person-body">
+            <h3>Dr. Raghvendra Singh Rohit</h3>
+            <p class="affil">Assistant Professor, Dept. of Computer Science & Engineering, IIT Roorkee, India</p>
+            <a class="webpage-link" href="https://iitr.ac.in/Departments/Computer%20Science%20and%20Engineering%20Department/People/Faculty/101083.html">Official webpage →</a>
+          </div>
+        </article>
+
+        <article class="person-card">
+          <img loading="lazy" class="demo-img" src="images/jagyanshi.jpg" alt="speaker 7">
+          <div class="person-body">
+            <h3>Dr. Jagnyashini Debadarshini</h3>
+            <p class="affil">Assistant Professor, Dept. of Computer Science & Engineering, IIT Roorkee, India</p>
+            <a class="webpage-link" href="https://iitr.ac.in/Departments/Computer%20Science%20and%20Engineering%20Department/People/Faculty/101096.html">Official webpage →</a>
+          </div>
+        </article>
+
+      </div>
+
+    </div>
+  </div>
+</section>
+
+  <!-- ============ DAY 0: COMPLIMENTARY WORKSHOP (White Panel) ============ -->
+  <section class="section reveal">
+    <div class="wrap">
+      <div class="panel">
+        <div class="section-head center">
+          <!-- NOTE: photo/logo intentionally left as a placeholder — add
+               images/ieee-ants-logo.png yourself (the onerror fallback
+               below shows plain text until that file exists). -->
+          <img loading="lazy" src="images/ieee-ants-logo.png" alt="IEEE ANTS 2026 logo" style="max-height: 56px; margin: 0 auto 1rem; display: block;"
+               onerror="this.style.display='none'">
+          <span class="eyebrow">Complimentary for Registered Participants &middot; IEEE ANTS 2026</span>
+          <h2>Complimentary Workshop</h2>
+        </div>
+        <div class="prose" style="max-width: 760px; margin: 0 auto; text-align: center;">
+          <p>Registered participants get complimentary access to a <strong>welcome workshop</strong> — a relaxed session introducing the program, the speakers, and what's ahead across the four main days, plus an informal chance to meet visiting professors before the main workshop begins. This is separate from the SPARC/WS-06 collaborations happening alongside IEEE ANTS 2026; details on that will be shared closer to the date.</p>
+          <p>The hands-on UAV drone masterclass is <strong>Day 4</strong> of the program — full timings will be posted once the schedule is finalized.</p>
+          <p><a class="webpage-link" href="https://ants2026.ieee-ants.org/ws-06-zero-trust-and-zero-knowledge-frameworks-next-generation-cyber-physical-systems-and-6g" target="_blank" rel="noopener">View the official WS-06 workshop page →</a></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ KEYNOTE SPEAKERS — big-photo bios, same photo size
+       and same fade-up scroll animation as the "About Course
+       Coordinators" section below (no section-specific overrides left
+       in base.css for this one on purpose, so the two stay in sync).
+       EDIT ME: bio text is just prose below — edit freely. ============ -->
+  <section class="section reveal keynote-speakers">
+    <div class="wrap">
+      <div class="section-head center">
+        <span class="eyebrow">Keynote Speakers</span>
+        <h2>International Keynote Speakers</h2>
+      </div>
+
+      <div class="details-layout">
+
+        <!-- Speaker 1 — big pic LEFT, bio RIGHT -->
+        <div class="split-panel">
+          <div class="split-media coordinator-media">
+            <img loading="lazy" src="images/Dushantha.png" alt="Prof. Dushantha Nalin K Jayakody">
+          </div>
+          <div class="prose">
+            <h3>Prof. Dushantha Nalin K Jayakody</h3>
+            <p class="affil">Professor, Lusófona University, Portugal</p>
+            <p>Prof. Jayakody is a Professor at Lusófona University, Portugal, and an IEEE Senior Member whose research centers on physical-layer security, coding theory, and wireless communications for 5G/6G networks. His work spans non-orthogonal multiple access (NOMA), visible light communication, and energy-harvesting relay networks, and he regularly serves as an editor and reviewer for leading IEEE journals — bringing a strong systems-and-standards perspective to how AI-driven security can be engineered directly into next-generation wireless infrastructure.</p>
+            <a class="webpage-link" href="https://scholar.google.com/citations?user=cFeFzQwAAAAJ&hl=en">Official webpage →</a>
+          </div>
+        </div>
+
+        <!-- Speaker 2 — bio LEFT, big pic RIGHT -->
+        <div class="split-panel">
+          <div class="prose">
+            <h3>Prof. Madhusanka Liyanage</h3>
+            <p class="affil">Professor & Ad Astra Fellow, School of Computer Science, University College Dublin, Ireland</p>
+            <p>Prof. Liyanage is a Professor and Ad Astra Fellow at the School of Computer Science, University College Dublin, where his research centers on the security and softwarization of 5G/6G mobile networks. He works extensively on network slicing security, O-RAN, and blockchain-based trust models for telecom infrastructure, and is an active contributor to international standardization efforts and 6G research initiatives — making him one of the sharper voices on what it actually takes to secure next-generation network architectures at scale.</p>
+            <a class="webpage-link" href="https://www.madhusanka.com/">Official webpage →</a>
+          </div>
+          <div class="split-media coordinator-media">
+            <img loading="lazy" src="images/Madhusanka.png" alt="Prof. Madhusanka Liyanage">
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="section reveal">
+  <div class="wrap">
+    <div class="section-head center">
+      <span class="eyebrow">Meet The Team</span>
+      <h2>About Course Coordinators</h2>
+    </div>
+
+    <div class="details-layout">
+
+      <!-- Coordinator 1 — image LEFT, text RIGHT -->
+      <div class="split-panel">
+        <div class="split-media coordinator-media">
+          <img loading="lazy" src="images/neetesh1.png" alt="Dr. Neetesh Kumar">
+        </div>
+        <div class="prose">
+          <h3>Dr. Neetesh Kumar</h3>
+          <p>
+            Dr. Neetesh Kumar is an Associate Professor in the Department of Computer Science and Engineering at IIT Roorkee. He earned his M.Tech and PhD from Jawaharlal Nehru University, New Delhi. His research focuses on Artificial Intelligence, Cloud Computing, Transport Cyber-Physical Systems, and Vehicular Networking, with work published in journals like IEEE Transactions on Intelligent Transportation Systems. He is Lead PI on several government-funded research projects and has received a Special Mention Award from Xerox Research Centre, Bangalore, along with multiple best paper awards.
+          </p>
+          <a class="webpage-link" href="https://neeteshkumariitr.netlify.app/">Official webpage →</a>
+        </div>
+      </div>
+
+      <!-- Coordinator 2 — text LEFT, image RIGHT (just swapped div order, no media-first) -->
+      <div class="split-panel">
+        <div class="prose">
+          <h3>Dr. Abhay Kumar Sah</h3>
+          <p>
+            Dr. Abhay Kumar Sah is an Associate Professor in the Department of Electronics and Communication Engineering at IIT Roorkee. He earned his PhD in Wireless Communication from IIT Kanpur, and previously worked as a Technical Lead at Samsung R&D and Lead Architect at Radisys India. His research covers 5G/6G systems, cell-free massive MIMO, and hybrid RF/VLC systems, with publications in IEEE Transactions on Communications and top conferences like GLOBECOM and ICC, along with several granted patents.
+          </p>
+          <a class="webpage-link" href="https://iitr.ac.in/~ece/abhaysah">Official webpage →</a>
+        </div>
+        <div class="split-media coordinator-media">
+          <img loading="lazy" src="images/abhay1.png" alt="Dr. Abhay Kumar Sah">
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+  
+    <!-- ============ ABOUT SPARC (Shaded Panel) ============ -->
+    <section class="section-alt reveal">
+      <div class="wrap">
+        <div class="panel panel-shade split-panel media-first">
+          <div class="split-media logo-media">
+            <img loading="lazy" src="images/sparc.png" alt="SPARC logo"
+                 onerror="this.style.display='none'; this.parentNode.innerHTML='<span class=&quot;img-fallback&quot;>[SPARC Logo]</span>'">
+          </div>
+          <div>
+            <div class="section-head">
+              <span class="eyebrow">About SPARC</span>
+              <h2>Scheme for Promotion of Academic and Research Collaboration</h2>
+            </div>
+            <div class="prose">
+              <p>SPARC is an initiative of the Ministry of Education, Government of India, that facilitates academic and research collaboration between Indian institutions and top-ranked institutes abroad. It supports joint research, student and faculty exchange, and knowledge-sharing activities — including workshops like this one — designed to strengthen India's research ecosystem through international partnership.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+    </section>
+    
+
+    <!-- ============ ABOUT IIT ROORKEE (White Panel) ============ -->
+    <section class="section reveal">
+      <div class="wrap">
+        <div class="panel split-panel">
+          <div>
+            <div class="section-head">
+              <span class="eyebrow">About the Institute</span>
+              <h2>Indian Institute of Technology Roorkee</h2>
+            </div>
+            <div class="prose">
+              <p>The Indian Institute of Technology Roorkee has the distinction of being the first engineering college in the Indian subcontinent. Founded as Roorkee College in 1847, it was later renamed Thomason College of Civil Engineering, and in 2001 became the seventh IIT in India. Declared an Institute of National Importance, IIT Roorkee is dedicated to excellence in engineering, science, and technology education and research.</p>
+            </div>
+          </div>
+          <div class="split-media">
+            <img loading="lazy" src="images/iitr.avif" alt="IIT Roorkee campus"
+                 onerror="this.style.display='none'; this.parentNode.innerHTML='<span class=&quot;img-fallback&quot;>[Campus Photo]</span>'">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ FINAL CTA — big closing push before the footer ============ -->
+    <section class="section final-cta-section">
+      <div class="wrap">
+        <div class="final-cta">
+          <div>
+            <span class="eyebrow final-cta-eyebrow">Limited Seats &middot; On-Campus + Certificate</span>
+            <h2>Ready to secure your spot?</h2>
+            <p>Join researchers and students from India and abroad for 4 days, 20 hours, and a certificate that shows you were there. Registration takes less than 5 minutes.</p>
+          </div>
+          <div class="final-cta-actions">
+            <a class="btn btn-primary" href="register.html">Register for the workshop</a>
+            <a class="btn btn-ghost-dark" href="details.html">View details &amp; fee</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-top">
+      <div class="footer-address">
+        <h3 class="footer-heading">Contact Us</h3>
+        <p>Department of Computer Science and Engineering,</p>
+        <p>Indian Institute of Technology,</p>
+        <p>Roorkee &ndash; 247667,</p>
+        <p>Uttarakhand, India</p>
+        <p class="footer-phone">Phone: <a href="tel:+911332285582">+91-1332-285582</a></p>
+        <p class="footer-phone">Email: <a href="mailto:csed@iitr.ac.in">csed@iitr.ac.in</a></p>
+      </div>
+      <div class="footer-map-wrap">
+        <div class="footer-map-frame">
+          <a class="footer-map-open" href="https://www.google.com/maps/search/?api=1&query=IIT+Roorkee" target="_blank" rel="noopener">Open in Maps ↗</a>
+          <iframe
+            src="https://www.google.com/maps?q=29.866932819020487,77.88688626753348&output=embed"
+            allowfullscreen="" loading="lazy"></iframe>
+        </div>
+        <a class="footer-directions-btn" href="https://www.google.com/maps/dir/?api=1&destination=IIT+Roorkee" target="_blank" rel="noopener">Get Directions</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+  <!-- JS Links -->
+  <script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
+  <script src="js/include.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
