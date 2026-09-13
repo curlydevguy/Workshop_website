@@ -1298,27 +1298,27 @@ a.contact-link:hover { color: var(--primary-blue); text-decoration: underline; }
   transform: translateY(-8px) scale(1.012);
   box-shadow: var(--shadow-lift);
 }
-/* EDIT ME: one fixed photo height shared by EVERY panel in both the
-   Keynote Speakers section and the Coordinators section below it — was
-   height:auto before, which let each photo stretch to match its own
-   panel's bio-text length, so shorter bios produced visibly shorter
-   photos. Fixed height means every photo is pixel-identical no matter
-   how long the bio next to it runs. Change the 340px value to resize
-   all four photos at once. */
+/* FIX #2: the earlier height:auto fix wasn't enough — this box lives in a
+   CSS Grid row (.details-layout .split-panel) with align-items: stretch,
+   which force-stretches BOTH columns to match whichever is taller (almost
+   always the bio text). The photo itself only needs its natural height,
+   so the stretched leftover space showed as empty background around it.
+   align-self: start opts this one grid item out of that stretch, so the
+   box hugs the photo's own height exactly and sits at the top of the row
+   instead of being pulled tall to match the text next to it. */
 .details-layout .split-media.coordinator-media {
   width: 100%;
-  height: 340px;
+  height: auto;
   min-height: 0;
   flex-shrink: 0;
+  align-self: start;
 }
 .details-layout .split-media.coordinator-media img {
   width: 100%;
-  height: 100%;
+  height: auto;
   object-fit: contain;
   object-position: center;
-}
-@media (max-width: 700px) {
-  .details-layout .split-media.coordinator-media { height: 280px; }
+  display: block;
 }
 
 /* ==========================================================================
@@ -1853,10 +1853,10 @@ body[data-page="register"] .panel-shade {
    alternating slide-in-from-side + blue glow-on-hover animation, which
    made it look and move differently from "About Course Coordinators"
    right below it. That's intentionally removed now — with no rules
-   left here, the section just inherits the exact same fixed-height
-   photo box (.details-layout .split-media.coordinator-media, now a
-   flat 340px/280px on mobile for every panel in both sections, not
-   text-dependent) and the exact same plain fade-up reveal
+   left here, the section just inherits the exact same auto-height
+   photo box (.details-layout .split-media.coordinator-media, sized
+   to each photo's own aspect ratio for every panel in both sections)
+   and the exact same plain fade-up reveal
    (.reveal-stagger-item) that the coordinators section uses, so both
    sections look and animate identically. */
 
