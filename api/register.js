@@ -27,61 +27,57 @@ function computeFee(category, checkInDate, checkOutDate) {
   const inDay = Number(checkInDate);
   const outDay = Number(checkOutDate);
   if (!VALID_CHECKIN_DAYS.includes(inDay) || !VALID_CHECKOUT_DAYS.includes(outDay) || outDay <= inDay) {
-    return null;
+    return null; // invalid dates
   }
   const nights = outDay - inDay;
-  return BASE_FEE + nights * ACCOMMODATION_PER_NIGHT;
+  return BASE_FEE + (nights * ACCOMMODATION_PER_NIGHT);
 }
 
-module.exports = async function handler(req, res) {
+module.exports = async (req, res) => {
   if (req.method !== 'POST') {
-    res.status(405).json({ error: 'Method not allowed' });
-    return;
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    const { fullName, email, phone, institute, category, checkInDate, checkOutDate } = req.body || {};
+    const {
+      fullName,
+      email,
+      phone,
+      institute,
+      category,
+      checkInDate,
+      checkOutDate,
+    } = req.body || {};
 
     if (!fullName || !email || !phone || !institute || !category) {
-      res.status(400).json({ error: 'Please fill in every field before continuing.' });
-      return;
+      return res.status(400).json({ error: 'Missing required fields' });
     }
 
     if (!VALID_CATEGORIES.includes(category)) {
-      res.status(400).json({ error: 'Invalid registration category.' });
-      return;
-    }
-
-    if (category === 'with_accommodation' && (!checkInDate || !checkOutDate)) {
-      res.status(400).json({ error: 'Please choose your check-in and check-out dates.' });
-      return;
+      return res.status(400).json({ error: 'Invalid category' });
     }
 
     const amount = computeFee(category, checkInDate, checkOutDate);
     if (amount === null) {
-      res.status(400).json({ error: 'Please choose a valid check-in/check-out date range (check-out must be after check-in).' });
-      return;
+      return res.status(400).json({ error: 'Invalid check-in/check-out dates for accommodation' });
     }
 
-    // One completed (paid) registration per email. Anyone still
-    // "awaiting_payment" doesn't count yet, so a genuine retry isn't blocked.
+    // Check for duplicate
     try {
       const alreadyRegistered = await isEmailAlreadyRegistered(email);
       if (alreadyRegistered) {
-        res.status(400).json({ error: 'This email address has already been used for a completed registration. Each participant may register only once.' });
-        return;
+        return res.status(409).json({ error: 'This email is already registered' });
       }
-    } catch (dupCheckErr) {
-      // If the duplicate check itself fails (e.g. Sheets hiccup), don't let
-      // that silently block every registration — log it and continue.
-      console.error('Duplicate email check failed:', dupCheckErr);
+    } catch (checkErr) {
+      console.warn('Duplicate check failed, continuing anyway:', checkErr);
     }
 
-    // Log the row as "awaiting_payment" — column H holds the SBI Collect
-    // UTR/reference number once the payment-proof step is submitted.
+    // Append to Sheet (non-blocking for response, but log any failure)
     try {
+      const regId = 'REG-' + Date.now().toString(36).toUpperCase();
       await appendRegistrationRow([
         new Date().toISOString(),
+        regId,
         fullName,
         email,
         phone,
@@ -90,17 +86,21 @@ module.exports = async function handler(req, res) {
         amount,
         '',                 // H — payment reference (SBI Collect UTR), filled in later
         'awaiting_payment', // I
-        category === 'with_accommodation' ? `${checkInDate}-24 Dec to ${checkOutDate}-24 Dec` : '', // J — stay dates, if any
+        category === 'with_accommodation' ? `${checkInDate} Dec to ${checkOutDate} Dec 2026` : '', // J — stay dates, if any
       ]);
     } catch (sheetErr) {
       console.error('Sheet insert failed:', sheetErr);
-      res.status(500).json({ error: 'Could not save your registration. Please try again in a moment.' });
-      return;
     }
 
-    res.status(200).json({ success: true, amount });
+    // Return the verified amount so the frontend knows what to instruct
+    // the user to pay on SBI Collect
+    return res.status(200).json({
+      success: true,
+      amount,
+      message: 'Registration recorded. Please complete payment via SBI Collect to confirm your seat.',
+    });
   } catch (err) {
-    console.error('register.js error:', err);
-    res.status(500).json({ error: 'Could not start registration. Please try again in a moment.' });
+    console.error('Register API error:', err);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };

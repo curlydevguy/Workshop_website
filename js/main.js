@@ -132,12 +132,15 @@ scrollTopBtn.addEventListener('click', () => smoothScrollTo(0));
 
 // Page transition fade (matches the 0.28s page-fade-out animation in css)
 document.addEventListener('click', function (e) {
+  // Let new-tab shortcuts and secondary clicks work natively
+  if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+
   const link = e.target.closest('a');
   if (!link) return;
 
   const href = link.getAttribute('href');
-  if (!href || href.startsWith('#') || href.startsWith('http') || href.startsWith('mailto:') || link.target === '_blank') {
-    return; // skip anchors, external links, mailto, new-tab links
+  if (!href || href.startsWith('#') || href.startsWith('http') || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('javascript:') || link.target === '_blank') {
+    return; // skip anchors, external links, mailto, tel, new-tab links
   }
 
   e.preventDefault();
@@ -145,4 +148,9 @@ document.addEventListener('click', function (e) {
   setTimeout(function () {
     window.location.href = href;
   }, 280); // matches fade-out duration
+});
+
+// Restore body visibility if restored from browser back/forward cache (bfcache)
+window.addEventListener('pageshow', function () {
+  document.body.classList.remove('is-leaving');
 });

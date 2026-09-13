@@ -29,6 +29,7 @@ async function includeHeader() {
   const navToggle = document.getElementById('navToggle');
   const navLinks = document.getElementById('navLinks');
   const navContainer = document.getElementById('navContainer');
+  const navToggleText = navToggle ? navToggle.querySelector('.nav-toggle-text') : null;
 
   // The responsive CSS scopes the open state to the container that wraps the
   // brand, links, and register action. Keep the script and CSS on the same
@@ -37,13 +38,14 @@ async function includeHeader() {
     const closeMenu = () => {
       navContainer.classList.remove('open');
       navToggle.setAttribute('aria-expanded', 'false');
-      navToggle.textContent = 'Menu';
+      if (navToggleText) navToggleText.textContent = 'Menu';
     };
 
-    navToggle.addEventListener('click', () => {
+    navToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
       const isOpen = navContainer.classList.toggle('open');
       navToggle.setAttribute('aria-expanded', String(isOpen));
-      navToggle.textContent = isOpen ? 'Close' : 'Menu';
+      if (navToggleText) navToggleText.textContent = isOpen ? 'Close' : 'Menu';
     });
 
     // Tapping a nav link closes the mobile menu instead of leaving it open
@@ -55,6 +57,13 @@ async function includeHeader() {
     // Escape closes the menu too, for keyboard users.
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && navContainer.classList.contains('open')) closeMenu();
+    });
+
+    // Tapping outside the navbar closes the mobile menu.
+    document.addEventListener('click', (e) => {
+      if (navContainer.classList.contains('open') && !navContainer.contains(e.target)) {
+        closeMenu();
+      }
     });
   }
 }
