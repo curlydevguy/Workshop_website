@@ -249,10 +249,6 @@ h1, h2, h3 { color: var(--text-dark); line-height: 1.2; text-wrap: balance; }
 .nav-brand:hover .nav-brand-main { color: #bfdbfe; }
 .nav-brand:hover .nav-brand-sub { color: var(--white); }
 
-.nav-link-mobile-only {
-  display: none;
-}
-
 .nav-right {
   display: flex;
   align-items: center;
@@ -393,20 +389,6 @@ h1, h2, h3 { color: var(--text-dark); line-height: 1.2; text-wrap: balance; }
   .nav-links a:hover,
   .nav-links a.active { background: rgba(255, 255, 255, 0.12); border: 0; color: var(--white); }
 
-  .nav-link-mobile-only {
-    display: block;
-    padding-top: 0.45rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.12);
-    margin-top: 0.25rem;
-  }
-  .nav-register-mobile-link {
-    background: var(--maroon) !important;
-    color: var(--white) !important;
-    font-weight: 700 !important;
-    text-align: center;
-  }
-  .nav-register-mobile-link:hover { background: var(--maroon-dark) !important; }
-
   .nav-container.open .nav-links {
     opacity: 1;
     visibility: visible;
@@ -419,11 +401,11 @@ h1, h2, h3 { color: var(--text-dark); line-height: 1.2; text-wrap: balance; }
 
 @media (max-width: 600px) {
   .nav-brand-sub { display: none; }
-  .nav-register-btn { padding: 0.45rem 1rem; font-size: 0.88rem; }
+  .nav-register-btn { padding: 0.45rem 0.95rem; font-size: 0.88rem; }
 }
 @media (max-width: 440px) {
-  .nav-register-btn { display: none; }
-  .nav-brand-main { font-size: 1.05rem; }
+  .nav-register-btn { padding: 0.38rem 0.75rem; font-size: 0.82rem; }
+  .nav-brand-main { font-size: 1.02rem; }
 }
 
 @media (max-width: 360px) { .wrap { padding: 0 1rem; } }
@@ -1994,7 +1976,7 @@ body[data-page="register"] .panel-shade {
 .program-glance-card {
   background: var(--white); border: 1px solid var(--gray-border); border-top: 3px solid var(--primary-blue);
   border-radius: var(--radius); padding: 1.75rem 1.5rem;
-  box-shadow: var(--shadow-sm); transition: transform 0.3s var(--ease-out-soft), box-shadow 0.3s var(--ease-out-soft);
+  box-shadow: var(--shadow-sm); transition: transform 0.3s var(--ease-out-soft), box-shadow 0.3s ease;
   text-align: center;
 }
 .program-glance-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lift); }
