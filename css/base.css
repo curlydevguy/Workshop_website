@@ -355,8 +355,7 @@ h1, h2, h3 { color: var(--text-dark); line-height: 1.2; text-wrap: balance; }
 @media (max-width: 860px) {
   .nav-container { flex-wrap: nowrap; gap: 0.75rem; }
   .nav-right { position: relative; flex-wrap: nowrap; justify-content: flex-end; gap: 0.65rem; }
-  .nav-toggle { display: inline-flex; }
-  .nav-links {
+  .nav-toggle { display: inline-flex; }\n  .nav-links {
     position: absolute;
     top: calc(100% + 0.65rem);
     right: 0;
@@ -386,8 +385,7 @@ h1, h2, h3 { color: var(--text-dark); line-height: 1.2; text-wrap: balance; }
     border-radius: 8px;
     font-size: 0.95rem;
   }
-  .nav-links a:hover,
-  .nav-links a.active { background: rgba(255, 255, 255, 0.12); border: 0; color: var(--white); }
+  .nav-links a:hover,\n  .nav-links a.active { background: rgba(255, 255, 255, 0.12); border: 0; color: var(--white); }
 
   .nav-container.open .nav-links {
     opacity: 1;
@@ -484,37 +482,11 @@ h1, h2, h3 { color: var(--text-dark); line-height: 1.2; text-wrap: balance; }
   padding-top: 1.25rem;
   border-top: 1px solid rgba(255, 255, 255, 0.12);
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem 1.5rem;
+  justify-content: center;
+  text-align: center;
   font-size: 0.82rem;
   color: rgba(255, 255, 255, 0.6);
-}
-.footer-bottom a {
-  color: rgba(255, 255, 255, 0.78);
-}
-.footer-bottom a:hover {
-  color: var(--white);
-  text-decoration: underline;
-}
-.footer-bottom-links {
-  display: flex;
-  gap: 1.25rem;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-@media (max-width: 640px) {
-  .footer-bottom {
-    flex-direction: column;
-    text-align: center;
-    justify-content: center;
-    gap: 0.65rem;
-  }
-  .footer-bottom-links {
-    justify-content: center;
-  }
 }
 
 /* ==========================================================================
@@ -1951,6 +1923,7 @@ body[data-page="register"] .panel-shade {
 .payment-step-proof { background: var(--gray-light); }
 /* ==========================================================================
    16. HOME PAGE ADDITIONS — 25hr course callout, program-at-a-glance,
+       speaker bio placeholders (Sept 2026 content pass)
    ========================================================================== */
 
 /* ---- Program-at-a-glance: 4 day cards teasing the schedule ----
@@ -1976,7 +1949,7 @@ body[data-page="register"] .panel-shade {
 .program-glance-card {
   background: var(--white); border: 1px solid var(--gray-border); border-top: 3px solid var(--primary-blue);
   border-radius: var(--radius); padding: 1.75rem 1.5rem;
-  box-shadow: var(--shadow-sm); transition: transform 0.3s var(--ease-out-soft), box-shadow 0.3s ease;
+  box-shadow: var(--shadow-sm); transition: transform 0.3s var(--ease-out-soft), box-shadow 0.3s var(--ease-out-soft);
   text-align: center;
 }
 .program-glance-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lift); }
