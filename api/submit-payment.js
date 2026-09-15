@@ -40,6 +40,7 @@ module.exports = async function handler(req, res) {
 
     // Upload screenshot to Drive (best effort — if Drive is unavailable, still save the reference in Sheets)
     let screenshotLink = '';
+    let driveErrorMessage = '';
     try {
       screenshotLink = (await uploadPaymentProof({
         base64: screenshotBase64,
@@ -47,18 +48,26 @@ module.exports = async function handler(req, res) {
         email: cleanEmail,
       })) || '';
     } catch (driveErr) {
+      driveErrorMessage = driveErr.message || String(driveErr);
       console.error('[submit-payment.js] Screenshot upload error (proceeding with sheet update):', driveErr);
     }
 
     try {
-      await submitPaymentProof(cleanEmail, { reference: cleanRef, screenshotLink });
+      await submitPaymentProof(cleanEmail, {
+        reference: cleanRef,
+        screenshotLink: screenshotLink || (driveErrorMessage ? `[Upload Error: ${driveErrorMessage.slice(0, 120)}]` : ''),
+      });
     } catch (sheetErr) {
       console.error('[submit-payment.js] Sheet update error:', sheetErr);
       res.status(400).json({ error: sheetErr.message || 'Could not update payment details. Please try again.' });
       return;
     }
 
-    res.status(200).json({ success: true });
+    res.status(200).json({
+      success: true,
+      screenshotUrl: screenshotLink || null,
+      warning: driveErrorMessage ? 'Payment reference saved, but screenshot upload encountered an issue.' : undefined,
+    });
   } catch (err) {
     console.error('[submit-payment.js] Unexpected error:', err);
     res.status(500).json({ error: 'Could not submit your payment proof. Please try again in a moment.' });

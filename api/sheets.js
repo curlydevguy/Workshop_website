@@ -141,7 +141,7 @@ async function submitPaymentProof(email, { reference, screenshotLink }) {
   let refCol = headerRow.findIndex(h => h.includes("ref") || h.includes("utr") || h.includes("order_id"));
   if (refCol === -1) refCol = 7; // Column H
 
-  let screenshotCol = headerRow.findIndex(h => h.includes("screenshot") || h.includes("proof") || h.includes("drive"));
+  let screenshotCol = headerRow.findIndex(h => h.includes("screenshot") || h.includes("proof") || h.includes("drive") || h.includes("receipt") || h.includes("image"));
   if (screenshotCol === -1) screenshotCol = 12; // Column M
 
   console.log(`[submitPaymentProof] Headers detected -> email: col ${colToLetter(emailCol)} (${emailCol}), status: col ${colToLetter(statusCol)} (${statusCol}), ref: col ${colToLetter(refCol)} (${refCol}), screenshot: col ${colToLetter(screenshotCol)} (${screenshotCol}). Total sheet rows: ${rows.length}`);

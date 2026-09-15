@@ -355,13 +355,14 @@
         screenshotFileName: screenshotFile.name,
       };
 
+      let result;
       try {
         const res = await fetch('/api/submit-payment', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(paymentPayload),
         });
-        const result = await res.json();
+        result = await res.json();
         if (!res.ok) throw new Error(result.error || 'Could not submit your payment proof. Please try again.');
       } catch (err) {
         setPaymentLoading(false);
@@ -376,6 +377,14 @@
       paymentProofForm.hidden = true;
       if (paymentSuccess) {
         paymentSuccess.hidden = false;
+        if (result && result.screenshotUrl) {
+          const linkWrap = document.getElementById('paymentScreenshotLinkWrap');
+          const linkElem = document.getElementById('paymentScreenshotLink');
+          if (linkWrap && linkElem) {
+            linkElem.href = result.screenshotUrl;
+            linkWrap.hidden = false;
+          }
+        }
         paymentSuccess.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
       setPaymentLoading(false);
