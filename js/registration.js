@@ -1,16 +1,12 @@
-// register.html — fee summary + registration submit flow.
-// Talks to one serverless function:
-//   POST /api/register  -> logs a row "awaiting payment" (no gateway right
-//   now — payment instructions via SBI Collect are shared separately)
-//
-// Fee model (2 categories only):
-//   without_accommodation -> flat ₹3,000
-//   with_accommodation    -> ₹3,000 + (nights × ₹700), nights = checkout day - checkin day
-//                             (check-in 19–24 Dec, check-out 20–25 Dec)
+// register.html — fee summary + registration submit flow + payment proof submission.
+// Talks to serverless functions:
+//   POST /api/register       -> logs a row "awaiting_payment"
+//   POST /api/submit-payment -> uploads screenshot to Drive & updates row with UTR + screenshot
 
 (function () {
   const form = document.getElementById('regForm');
-  if (!form) return; // only runs on register.html
+  const paymentProofForm = document.getElementById('paymentProofForm');
+  if (!form && !paymentProofForm) return; // only runs on register page
 
   const ACCOMMODATION_PER_NIGHT = 700;
 
@@ -29,9 +25,27 @@
   const payBtn = document.getElementById('payBtn');
   const formError = document.getElementById('formError');
   const regSuccess = document.getElementById('regSuccess');
+  const showPaymentStepBtn = document.getElementById('showPaymentStepBtn');
+
+  const paymentStep = document.getElementById('paymentStep');
+  const paymentDueAmount = document.getElementById('paymentDueAmount');
+  const paymentEmail = document.getElementById('paymentEmail');
+  const paymentRef = document.getElementById('paymentRef');
+  const paymentFormError = document.getElementById('paymentFormError');
+  const paymentSubmitBtn = document.getElementById('paymentSubmitBtn');
+  const paymentSuccess = document.getElementById('paymentSuccess');
+  const paymentScreenshotInput = document.getElementById('paymentScreenshot');
+  const paymentScreenshotDrop = document.getElementById('paymentScreenshotDrop');
+  const paymentScreenshotEmpty = document.getElementById('paymentScreenshotEmpty');
+  const paymentScreenshotFilled = document.getElementById('paymentScreenshotFilled');
+  const paymentScreenshotFileName = document.getElementById('paymentScreenshotFileName');
+
+  const MAX_SCREENSHOT_BYTES = 4 * 1024 * 1024; // 4 MB
+  let submittedEmail = null;
 
   // ---- Nights + fee math ----
   function nightsSelected() {
+    if (!checkInDate || !checkOutDate) return 0;
     const inDay = Number(checkInDate.value);
     const outDay = Number(checkOutDate.value);
     const nights = outDay - inDay;
@@ -39,6 +53,7 @@
   }
 
   function currentFee() {
+    if (!categorySelect) return 3000;
     const opt = categorySelect.options[categorySelect.selectedIndex];
     const baseFee = opt ? Number(opt.dataset.fee) : NaN;
     if (!Number.isFinite(baseFee)) return null;
@@ -51,11 +66,13 @@
   }
 
   function updateStayVisibility() {
+    if (!categorySelect || !stayDatesRow) return;
     const withStay = categorySelect.value === 'with_accommodation';
     stayDatesRow.hidden = !withStay;
   }
 
   function updateFeeSummary() {
+    if (!categorySelect || !feeSummary) return;
     const opt = categorySelect.options[categorySelect.selectedIndex];
     const baseFee = opt ? Number(opt.dataset.fee) : NaN;
     const withStay = categorySelect.value === 'with_accommodation';
@@ -65,52 +82,62 @@
       return;
     }
 
-    feeSummaryBaseAmount.textContent = '₹' + baseFee.toLocaleString('en-IN');
+    if (feeSummaryBaseAmount) feeSummaryBaseAmount.textContent = '₹' + baseFee.toLocaleString('en-IN');
 
-    if (withStay) {
+    if (withStay && feeSummaryStay && feeSummaryStayLabel && feeSummaryStayAmount) {
       const nights = nightsSelected();
       const stayAmount = nights * ACCOMMODATION_PER_NIGHT;
       feeSummaryStayLabel.textContent = 'Accommodation (' + nights + (nights === 1 ? ' night' : ' nights') + ' × ₹700)';
       feeSummaryStayAmount.textContent = '₹' + stayAmount.toLocaleString('en-IN');
       feeSummaryStay.hidden = false;
-    } else {
+    } else if (feeSummaryStay) {
       feeSummaryStay.hidden = true;
     }
 
     const total = currentFee();
-    feeSummaryAmount.textContent = total === null ? '₹0' : '₹' + total.toLocaleString('en-IN');
+    if (feeSummaryAmount) feeSummaryAmount.textContent = total === null ? '₹0' : '₹' + total.toLocaleString('en-IN');
     feeSummary.hidden = false;
   }
 
-  categorySelect.addEventListener('change', () => {
-    updateStayVisibility();
-    updateFeeSummary();
-  });
-  checkInDate.addEventListener('change', () => {
-    // Keep check-out always after check-in — nudge it forward if needed.
-    if (Number(checkOutDate.value) <= Number(checkInDate.value)) {
-      const nextOption = Array.from(checkOutDate.options).find(o => Number(o.value) > Number(checkInDate.value));
-      if (nextOption) checkOutDate.value = nextOption.value;
-    }
-    updateFeeSummary();
-  });
-  checkOutDate.addEventListener('change', updateFeeSummary);
+  if (categorySelect) {
+    categorySelect.addEventListener('change', () => {
+      updateStayVisibility();
+      updateFeeSummary();
+    });
+  }
 
-  // Sync on load.
+  if (checkInDate) {
+    checkInDate.addEventListener('change', () => {
+      if (Number(checkOutDate.value) <= Number(checkInDate.value)) {
+        const nextOption = Array.from(checkOutDate.options).find(o => Number(o.value) > Number(checkInDate.value));
+        if (nextOption) checkOutDate.value = nextOption.value;
+      }
+      updateFeeSummary();
+    });
+  }
+
+  if (checkOutDate) {
+    checkOutDate.addEventListener('change', updateFeeSummary);
+  }
+
+  // Initial sync
   updateStayVisibility();
   updateFeeSummary();
 
   function showError(message) {
+    if (!formError) return;
     formError.textContent = message;
     formError.hidden = false;
   }
 
   function clearError() {
+    if (!formError) return;
     formError.hidden = true;
     formError.textContent = '';
   }
 
   function setLoading(isLoading) {
+    if (!payBtn) return;
     payBtn.disabled = isLoading;
     payBtn.classList.toggle('is-loading', isLoading);
   }
@@ -124,93 +151,122 @@
     });
   }
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    clearError();
-
-    const fee = currentFee();
-    if (!form.reportValidity()) return;
-    if (fee === null) {
-      showError('Please select a registration category.');
-      return;
-    }
-    if (categorySelect.value === 'with_accommodation' && nightsSelected() <= 0) {
-      showError('Please choose a check-out date after your check-in date.');
-      return;
-    }
-
-    const payload = {
-      fullName: document.getElementById('fullName').value.trim(),
-      email: document.getElementById('email').value.trim(),
-      phone: document.getElementById('phone').value.trim(),
-      institute: document.getElementById('institute').value.trim(),
-      category: categorySelect.value,
-      checkInDate: categorySelect.value === 'with_accommodation' ? checkInDate.value : '',
-      checkOutDate: categorySelect.value === 'with_accommodation' ? checkOutDate.value : '',
-      amount: fee,
-    };
-
-    setLoading(true);
-
-    let result;
-    try {
-      const res = await fetch('/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      result = await res.json();
-      if (!res.ok) throw new Error(result.error || 'Could not submit your registration. Please try again.');
-    } catch (err) {
-      setLoading(false);
-      showError(err.message || 'Something went wrong submitting your registration. Please try again.');
-      return;
-    }
-
-    // No payment gateway right now — registration is logged as "awaiting
-    // payment". The payment step (SBI Collect link + proof-of-payment form)
-    // reveals itself right below, so the participant can complete it in the
-    // same visit instead of waiting for a separate email.
-    document.getElementById('successName').textContent = payload.fullName;
-    document.getElementById('successEmail').textContent = payload.email;
-    form.hidden = true;
-    regSuccess.hidden = false;
-
-    submittedEmail = payload.email;
-    revealPaymentStep(fee);
-
-    regSuccess.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    setLoading(false);
-  });
-
-  // ==========================================================================
-  // PAYMENT STEP — appears once registration succeeds. Pay via SBI Collect,
-  // then submit proof of payment (reference number, amount, date, screenshot).
-  // ==========================================================================
-  const paymentStep = document.getElementById('paymentStep');
-  const paymentDueAmount = document.getElementById('paymentDueAmount');
-  const paymentProofForm = document.getElementById('paymentProofForm');
-  const paymentFormError = document.getElementById('paymentFormError');
-  const paymentSubmitBtn = document.getElementById('paymentSubmitBtn');
-  const paymentSuccess = document.getElementById('paymentSuccess');
-  const paymentScreenshotInput = document.getElementById('paymentScreenshot');
-  const paymentScreenshotDrop = document.getElementById('paymentScreenshotDrop');
-  const paymentScreenshotEmpty = document.getElementById('paymentScreenshotEmpty');
-  const paymentScreenshotFilled = document.getElementById('paymentScreenshotFilled');
-  const paymentScreenshotFileName = document.getElementById('paymentScreenshotFileName');
-
-  const MAX_SCREENSHOT_BYTES = 4 * 1024 * 1024; // 4 MB
-  let submittedEmail = null;
-
-  // Reveal the payment step — unhide it, then add the "is-visible" class a
-  // tick later so the .reveal-pop transition (fade + slide up) actually
-  // plays instead of snapping straight to its final state.
   function revealPaymentStep(fee) {
     if (!paymentStep) return;
-    if (fee) paymentDueAmount.textContent = '₹' + fee.toLocaleString('en-IN');
+    if (fee && paymentDueAmount) paymentDueAmount.textContent = '₹' + fee.toLocaleString('en-IN');
     paymentStep.hidden = false;
     requestAnimationFrame(() => {
       requestAnimationFrame(() => paymentStep.classList.add('is-visible'));
+    });
+  }
+
+  // Handle Step 1 submission
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearError();
+
+      const fee = currentFee();
+      if (!form.reportValidity()) return;
+      if (fee === null) {
+        showError('Please select a registration category.');
+        return;
+      }
+      if (categorySelect.value === 'with_accommodation' && nightsSelected() <= 0) {
+        showError('Please choose a check-out date after your check-in date.');
+        return;
+      }
+
+      const rawEmail = document.getElementById('email').value.trim();
+      const cleanEmail = rawEmail.toLowerCase();
+
+      const payload = {
+        fullName: document.getElementById('fullName').value.trim(),
+        email: cleanEmail,
+        phone: document.getElementById('phone').value.trim(),
+        institute: document.getElementById('institute').value.trim(),
+        category: categorySelect.value,
+        checkInDate: categorySelect.value === 'with_accommodation' ? checkInDate.value : '',
+        checkOutDate: categorySelect.value === 'with_accommodation' ? checkOutDate.value : '',
+        amount: fee,
+      };
+
+      setLoading(true);
+
+      try {
+        const res = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error || 'Could not submit your registration. Please try again.');
+      } catch (err) {
+        setLoading(false);
+        showError(err.message || 'Something went wrong submitting your registration. Please try again.');
+        return;
+      }
+
+      // Persist email & fee across tabs and reloads
+      submittedEmail = cleanEmail;
+      try {
+        sessionStorage.setItem('workshop_reg_email', cleanEmail);
+        localStorage.setItem('workshop_reg_email', cleanEmail);
+        sessionStorage.setItem('workshop_reg_fee', String(fee));
+        localStorage.setItem('workshop_reg_fee', String(fee));
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState(null, '', '/register?step=payment&email=' + encodeURIComponent(cleanEmail));
+        }
+      } catch (storageErr) {}
+
+      if (paymentEmail) paymentEmail.value = cleanEmail;
+
+      const sName = document.getElementById('successName');
+      const sEmail = document.getElementById('successEmail');
+      if (sName) sName.textContent = payload.fullName;
+      if (sEmail) sEmail.textContent = cleanEmail;
+
+      form.hidden = true;
+      if (regSuccess) regSuccess.hidden = false;
+
+      revealPaymentStep(fee);
+
+      if (regSuccess) regSuccess.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setLoading(false);
+    });
+  }
+
+  // Restore state from URL or storage if returning user
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const paramEmail = urlParams.get('email');
+    const paramStep = urlParams.get('step');
+
+    const storedEmail = paramEmail || sessionStorage.getItem('workshop_reg_email') || localStorage.getItem('workshop_reg_email');
+    const storedFee = Number(sessionStorage.getItem('workshop_reg_fee') || localStorage.getItem('workshop_reg_fee') || 3000);
+
+    if (storedEmail) {
+      submittedEmail = storedEmail.trim().toLowerCase();
+      if (paymentEmail) paymentEmail.value = submittedEmail;
+    }
+
+    if (paramStep === 'payment' || (paramEmail && storedEmail)) {
+      if (form) form.hidden = true;
+      if (regSuccess) {
+        regSuccess.hidden = false;
+        const sEmail = document.getElementById('successEmail');
+        if (sEmail) sEmail.textContent = submittedEmail;
+      }
+      revealPaymentStep(storedFee);
+    }
+  } catch (e) {}
+
+  if (showPaymentStepBtn) {
+    showPaymentStepBtn.addEventListener('click', () => {
+      if (form) form.hidden = true;
+      const storedFee = Number(sessionStorage.getItem('workshop_reg_fee') || localStorage.getItem('workshop_reg_fee') || 3000);
+      revealPaymentStep(storedFee);
+      if (paymentStep) paymentStep.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   }
 
@@ -237,18 +293,19 @@
       const file = paymentScreenshotInput.files[0];
       if (!file) return;
       if (file.size > MAX_SCREENSHOT_BYTES) {
-        showPaymentError('That screenshot is too large. Please upload a file under 4 MB.');
+        showPaymentError('That file is too large. Please upload a screenshot or PDF under 4 MB.');
         paymentScreenshotInput.value = '';
         return;
       }
       clearPaymentError();
-      paymentScreenshotFileName.textContent = file.name;
-      paymentScreenshotEmpty.hidden = true;
-      paymentScreenshotFilled.hidden = false;
-      paymentScreenshotDrop.classList.add('has-file');
+      if (paymentScreenshotFileName) paymentScreenshotFileName.textContent = file.name;
+      if (paymentScreenshotEmpty) paymentScreenshotEmpty.hidden = true;
+      if (paymentScreenshotFilled) paymentScreenshotFilled.hidden = false;
+      if (paymentScreenshotDrop) paymentScreenshotDrop.classList.add('has-file');
     });
   }
 
+  // Handle Step 3 payment proof submission
   if (paymentProofForm) {
     paymentProofForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -256,17 +313,27 @@
 
       if (!paymentProofForm.reportValidity()) return;
 
+      const emailInputVal = (paymentEmail ? paymentEmail.value : submittedEmail || '').trim().toLowerCase();
+      if (!emailInputVal || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInputVal)) {
+        showPaymentError('Please enter the email address you used during registration.');
+        if (paymentEmail) paymentEmail.focus();
+        return;
+      }
+
+      const refVal = (paymentRef ? paymentRef.value : '').trim();
+      if (!refVal) {
+        showPaymentError('Please enter your SBI Collect reference / UTR number.');
+        if (paymentRef) paymentRef.focus();
+        return;
+      }
+
       const screenshotFile = paymentScreenshotInput && paymentScreenshotInput.files[0];
       if (!screenshotFile) {
-        showPaymentError('Please upload a screenshot of your payment confirmation.');
+        showPaymentError('Please upload a screenshot or receipt PDF of your payment confirmation.');
         return;
       }
       if (screenshotFile.size > MAX_SCREENSHOT_BYTES) {
-        showPaymentError('That screenshot is too large. Please upload a file under 4 MB.');
-        return;
-      }
-      if (!submittedEmail) {
-        showPaymentError('We lost track of your registration email — please refresh and register again.');
+        showPaymentError('That file is too large. Please upload a screenshot under 4 MB.');
         return;
       }
 
@@ -282,8 +349,8 @@
       }
 
       const paymentPayload = {
-        email: submittedEmail,
-        reference: document.getElementById('paymentRef').value.trim(),
+        email: emailInputVal,
+        reference: refVal,
         screenshotBase64,
         screenshotFileName: screenshotFile.name,
       };
@@ -302,9 +369,15 @@
         return;
       }
 
+      try {
+        sessionStorage.removeItem('workshop_reg_email');
+      } catch (e) {}
+
       paymentProofForm.hidden = true;
-      paymentSuccess.hidden = false;
-      paymentSuccess.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (paymentSuccess) {
+        paymentSuccess.hidden = false;
+        paymentSuccess.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
       setPaymentLoading(false);
     });
   }

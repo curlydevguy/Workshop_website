@@ -1,16 +1,9 @@
 // POST /api/register
-// Body: { fullName, email, phone, institute, category, checkInDate, checkOutDate, amount }
-// 1. Recomputes the fee SERVER-SIDE (never trust a client-sent amount).
-// 2. Logs a row to the Google Sheet with status "awaiting_payment".
-// 3. Returns a simple success response — no payment gateway right now.
-//    Payment is via SBI Collect; registrations are collected here and
-//    payment is confirmed manually.
-//
-// Fee model (2 categories only):
-//   without_accommodation -> flat ₹3,000
-//   with_accommodation    -> ₹3,000 + (nights × ₹700)
-//   nights = checkOutDate - checkInDate (both are day-of-month numbers in
-//   December 2026; check-in 19–24, check-out 20–25)
+// Body: { fullName, email, phone, institute, category, checkInDate, checkOutDate }
+// 1. Recomputes fee SERVER-SIDE (never trust client-sent amounts).
+// 2. Normalizes email (lowercase + trim) for consistent lookup.
+// 3. Appends row to Google Sheet with status "awaiting_payment".
+// 4. Returns { success: true, amount, email }.
 
 const { appendRegistrationRow, isEmailAlreadyRegistered } = require('./sheets');
 
@@ -42,18 +35,29 @@ module.exports = async function handler(req, res) {
   try {
     const { fullName, email, phone, institute, category, checkInDate, checkOutDate } = req.body || {};
 
-    if (!fullName || !email || !phone || !institute || !category) {
+    const cleanName = (fullName || '').trim();
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const cleanPhone = (phone || '').trim();
+    const cleanInstitute = (institute || '').trim();
+
+    if (!cleanName || !cleanEmail || !cleanPhone || !cleanInstitute || !category) {
       res.status(400).json({ error: 'Please fill in every field before continuing.' });
       return;
     }
 
+    // Basic email format check
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      res.status(400).json({ error: 'Please enter a valid email address.' });
+      return;
+    }
+
     if (!VALID_CATEGORIES.includes(category)) {
-      res.status(400).json({ error: 'Invalid registration category.' });
+      res.status(400).json({ error: 'Invalid registration category selected.' });
       return;
     }
 
     if (category === 'with_accommodation' && (!checkInDate || !checkOutDate)) {
-      res.status(400).json({ error: 'Please choose your check-in and check-out dates.' });
+      res.status(400).json({ error: 'Please select your check-in and check-out dates.' });
       return;
     }
 
@@ -63,44 +67,40 @@ module.exports = async function handler(req, res) {
       return;
     }
 
-    // One completed (paid) registration per email. Anyone still
-    // "awaiting_payment" doesn't count yet, so a genuine retry isn't blocked.
+    // Duplicate check: one completed (paid) registration per email.
+    // Unpaid registrations still "awaiting_payment" do not block a retry.
     try {
-      const alreadyRegistered = await isEmailAlreadyRegistered(email);
+      const alreadyRegistered = await isEmailAlreadyRegistered(cleanEmail);
       if (alreadyRegistered) {
         res.status(400).json({ error: 'This email address has already been used for a completed registration. Each participant may register only once.' });
         return;
       }
     } catch (dupCheckErr) {
-      // If the duplicate check itself fails (e.g. Sheets hiccup), don't let
-      // that silently block every registration — log it and continue.
-      console.error('Duplicate email check failed:', dupCheckErr);
+      console.error('[register.js] Duplicate email check failed:', dupCheckErr);
+      // Non-blocking for Sheets read glitch
     }
 
-    // Log the row as "awaiting_payment" — column H holds the SBI Collect
-    // UTR/reference number once the payment-proof step is submitted.
-    try {
-      await appendRegistrationRow([
-        new Date().toISOString(),
-        fullName,
-        email,
-        phone,
-        institute,
-        category,
-        amount,
-        '',                 // H — payment reference (SBI Collect UTR), filled in later
-        'awaiting_payment', // I
-        category === 'with_accommodation' ? `${checkInDate} Dec to ${checkOutDate} Dec 2026` : '', // J — stay dates, if any
-      ]);
-    } catch (sheetErr) {
-      console.error('Sheet insert failed:', sheetErr);
-      res.status(500).json({ error: 'Could not save your registration. Please try again in a moment.' });
-      return;
-    }
+    const timestamp = new Date().toISOString();
+    const stayDates = category === 'with_accommodation' ? `${checkInDate} Dec to ${checkOutDate} Dec 2026` : '';
 
-    res.status(200).json({ success: true, amount });
+    console.log(`[register.js] Creating registration row: ${cleanEmail} (${category}, ₹${amount})`);
+
+    await appendRegistrationRow([
+      timestamp,
+      cleanName,
+      cleanEmail,
+      cleanPhone,
+      cleanInstitute,
+      category,
+      amount,
+      '',                 // H: Payment Reference (filled in Step 3)
+      'awaiting_payment', // I: Status
+      stayDates,          // J: Stay dates
+    ]);
+
+    res.status(200).json({ success: true, amount, email: cleanEmail });
   } catch (err) {
-    console.error('register.js error:', err);
-    res.status(500).json({ error: 'Could not start registration. Please try again in a moment.' });
+    console.error('[register.js] Error handling registration:', err);
+    res.status(500).json({ error: 'Could not save your registration. Please try again in a moment.' });
   }
 };

@@ -96,19 +96,6 @@ body {
   line-height: clamp(1.6, 1.5 + 0.1vw, 1.8);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  opacity: 0;
-  animation: page-fade-in 0.5s var(--ease-out-soft) forwards;
-}
-@keyframes page-fade-in {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-body.is-leaving {
-  animation: page-fade-out 0.28s cubic-bezier(0.4, 0, 1, 1) forwards;
-}
-@keyframes page-fade-out {
-  from { opacity: 1; transform: translateY(0); }
-  to { opacity: 0; transform: translateY(-8px); }
 }
 
 .prose p, .prose ul, .panel, .step-list {
@@ -519,7 +506,7 @@ h1, h2, h3 { color: var(--text-dark); line-height: 1.2; text-wrap: balance; }
   background-color: var(--navy);
   background-image:
     linear-gradient(120deg, rgba(10,18,34,0.82) 0%, rgba(15,27,46,0.62) 45%, rgba(20,52,92,0.72) 100%),
-    url('../images/hero-network.jpg');
+    url('../images/hero-network.webp');
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -1486,9 +1473,9 @@ a.contact-link:hover { color: var(--primary-blue); text-decoration: underline; }
    ========================================================================== */
 .reveal {
   opacity: 0;
-  transform: translateY(46px);
-  transition: opacity 0.8s var(--ease-out-soft),
-              transform 0.8s var(--ease-out-soft);
+  transform: translateY(22px);
+  transition: opacity 0.35s var(--ease-out-soft),
+              transform 0.35s var(--ease-out-soft);
   will-change: opacity, transform;
 }
 .reveal.is-visible {
@@ -1498,8 +1485,8 @@ a.contact-link:hover { color: var(--primary-blue); text-decoration: underline; }
 
 .reveal-pop {
   opacity: 0;
-  transform: translateY(24px) scale(0.98);
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  transform: translateY(18px) scale(0.98);
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 .reveal-pop.is-visible {
   opacity: 1;
@@ -1508,9 +1495,9 @@ a.contact-link:hover { color: var(--primary-blue); text-decoration: underline; }
 
 .reveal-stagger-item {
   opacity: 0;
-  transform: translateY(28px) scale(0.96);
-  transition: opacity 0.6s var(--ease-out-soft),
-              transform 0.6s var(--ease-out-soft);
+  transform: translateY(18px) scale(0.98);
+  transition: opacity 0.35s var(--ease-out-soft),
+              transform 0.35s var(--ease-out-soft);
   will-change: opacity, transform;
 }
 .reveal-stagger-item.is-visible {

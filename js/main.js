@@ -63,13 +63,10 @@ const revealWithStagger = (target) => {
   const children = target.matches(STAGGER_SELECTOR) ? [] : target.querySelectorAll(STAGGER_SELECTOR);
   children.forEach((child, i) => {
     child.classList.add('reveal-stagger-item');
-    const delay = Math.min(i * 65, 455);
+    const delay = Math.min(i * 30, 150);
     child.style.transitionDelay = `${delay}ms`;
-    // next frame, so the browser paints the 0-opacity state first
     requestAnimationFrame(() => child.classList.add('is-visible'));
-    // Clear the inline delay once the fade-in has had time to finish, so it
-    // doesn't linger and make later interactions (like hover) feel delayed.
-    setTimeout(() => { child.style.transitionDelay = ''; }, delay + 500);
+    setTimeout(() => { child.style.transitionDelay = ''; }, delay + 350);
   });
 };
 
@@ -81,7 +78,7 @@ if ('IntersectionObserver' in window && revealEls.length) {
         io.unobserve(entry.target);
       }
     });
-  }, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
+  }, { threshold: 0.05, rootMargin: '0px 0px 100px 0px' });
   revealEls.forEach((el) => io.observe(el));
 } else {
   revealEls.forEach((el) => {
@@ -130,27 +127,30 @@ window.addEventListener('resize', updateScrollBtnPosition);
 
 scrollTopBtn.addEventListener('click', () => smoothScrollTo(0));
 
-// Page transition fade (matches the 0.28s page-fade-out animation in css)
-document.addEventListener('click', function (e) {
-  // Let new-tab shortcuts and secondary clicks work natively
-  if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+// ==========================================================================
+// INSTANT PAGE PREFETCHING — prefetches internal pages on hover/touch
+// By the time the user finishes their click, the page is already cached.
+// ==========================================================================
+const prefetchedUrls = new Set();
+const prefetchPage = (href) => {
+  if (!href) return;
+  const cleanHref = href.split('#')[0].split('?')[0];
+  if (!cleanHref || cleanHref.startsWith('http') || cleanHref.startsWith('mailto:') || cleanHref.startsWith('tel:') || prefetchedUrls.has(cleanHref)) return;
+  prefetchedUrls.add(cleanHref);
 
+  const link = document.createElement('link');
+  link.rel = 'prefetch';
+  link.href = cleanHref;
+  link.as = 'document';
+  document.head.appendChild(link);
+};
+
+document.addEventListener('mouseover', (e) => {
   const link = e.target.closest('a');
-  if (!link) return;
+  if (link) prefetchPage(link.getAttribute('href'));
+}, { passive: true });
 
-  const href = link.getAttribute('href');
-  if (!href || href.startsWith('#') || href.startsWith('http') || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('javascript:') || link.target === '_blank') {
-    return; // skip anchors, external links, mailto, tel, new-tab links
-  }
-
-  e.preventDefault();
-  document.body.classList.add('is-leaving');
-  setTimeout(function () {
-    window.location.href = href;
-  }, 280); // matches fade-out duration
-});
-
-// Restore body visibility if restored from browser back/forward cache (bfcache)
-window.addEventListener('pageshow', function () {
-  document.body.classList.remove('is-leaving');
-});
+document.addEventListener('touchstart', (e) => {
+  const link = e.target.closest('a');
+  if (link) prefetchPage(link.getAttribute('href'));
+}, { passive: true });

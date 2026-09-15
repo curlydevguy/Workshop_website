@@ -1,91 +1,47 @@
 # AI for Secure 6G: Foundations of FL, XAI, and LLMs — Website
 
-Static site (Vercel) + Razorpay for payments + Google Sheets as the registration
-database. This README is the setup order — follow it top to bottom.
+Modern, high-performance static website for the SPARC-sponsored Indo-International Workshop at IIT Roorkee (20–24 December 2026). Deployed on Vercel with Google Sheets service account integration for registrations, SBI Collect for payments, and Google Drive upload proxy for payment receipts.
 
-## What's in here
+## Architecture
 
 ```
-index.html, details.html, register.html, schedule.html, contact.html, header.html
-css/base.css              — all styling
-js/main.js                — footer year, scroll reveals
-js/include.js              — injects header.html into every page, mobile nav
-js/registration.js         — register.html: fee calc + Razorpay checkout flow
-api/register.js            — serverless fn: creates Razorpay order + pending Sheet row
-api/verify.js               — serverless fn: verifies payment, marks Sheet row paid
-google-apps-script/Code.gs  — paste into Apps Script; turns the Sheet into an API
-package.json                — the one dependency (razorpay) for the serverless fns
-.env.example                — env vars you need to set in Vercel
+index.html, details.html, register.html, schedule.html, contact.html, payment-guide.html, poster.html
+css/base.css          — Core styles with CSS variables and responsive layout
+js/main.js            — Smooth scrolling, intersection observers, instant prefetching
+js/include.js         — Navigation setup and responsive mobile drawer
+js/registration.js    — Registration flow: fee calculation, state persistence, payment proof submission
+api/register.js       — Serverless endpoint: validates and writes participant row to Google Sheets
+api/submit-payment.js — Serverless endpoint: uploads receipt to Google Drive & updates Sheet with UTR
+api/sheets.js         — Google Sheets service account API helper with dynamic column header detection
+api/drive.js          — Google Apps Script proxy helper for uploading payment screenshots to Drive
+vercel.json           — Clean URLs, trailing slash handling, and asset caching headers
+server.js             — Local development server with clean URL support and mock API endpoints
 ```
 
-## 1. Google Sheet
+## Setup & Environment Variables
 
-1. Create a new Google Sheet. Rename a tab (or the default one) to `Registrations`.
-2. In row 1, add these column headers, in this exact order:
-   `id | fullName | email | phone | institute | category | amount | payment_status | razorpay_order_id | razorpay_payment_id | created_at`
-3. Extensions → Apps Script. Delete the placeholder code, paste in
-   `google-apps-script/Code.gs`.
-4. Deploy → New deployment → type **Web app**.
-   - Execute as: **Me**
-   - Who has access: **Anyone**
-5. Copy the deployment URL — that's your `APPS_SCRIPT_URL`.
+Configure these environment variables in your Vercel Project Settings:
 
-## 2. Razorpay
+1. **Google Sheets Service Account**:
+   - `GOOGLE_SERVICE_ACCOUNT_EMAIL`: The service account email (e.g. `service-account@project.iam.gserviceaccount.com`).
+   - `GOOGLE_PRIVATE_KEY`: The RSA private key from your service account JSON credentials (`-----BEGIN PRIVATE KEY...`).
+   - `GOOGLE_SHEET_ID`: The ID of your Google Sheet (from its URL: `https://docs.google.com/spreadsheets/d/<ID>/edit`).
 
-1. Sign up at razorpay.com, grab your **test mode** Key ID and Key Secret first
-   (Settings → API Keys) — switch to live keys only once you've tested end to end.
+2. **Google Apps Script Upload Proxy**:
+   - `APPS_SCRIPT_URL`: Deployed Apps Script Web App URL ending in `/exec`.
+   - `APPS_SCRIPT_SECRET`: Shared secret string matching the constant in Apps Script.
+   - `GOOGLE_DRIVE_PAYMENT_FOLDER_ID`: Google Drive folder ID where payment screenshots are stored.
 
-## 3. Fees
+## Google Sheet Headers
 
-The fee per category lives in **two places** and must match:
-- `api/register.js` → the `FEES` object (this is what's actually charged — never trust the browser)
-- `register.html` → the `data-fee="..."` attribute on each `<option>` (this is just for the on-page display)
+The `Registrations` sheet headers (Row 1):
+`Timestamp | Name | Email | Phone | Institution | Category | Amount | Payment Reference | Status | Stay Dates | Notes | AI Check | Payment Screenshot Link`
 
-Current placeholder amounts: IITR student ₹500, other institute ₹1000, industry ₹2000.
-`details.html`'s fee table mirrors these — update all three together if you change pricing.
+`api/sheets.js` dynamically inspects row 1 headers to match columns automatically (`email`, `status`, `reference`, `screenshot`), with robust fallbacks.
 
-## 4. Deploy to Vercel
+## Running Locally
 
-1. Push this folder to a GitHub repo, then import it in Vercel (or run `vercel` from
-   this folder with the Vercel CLI).
-2. In the Vercel project → Settings → Environment Variables, add the three variables
-   from `.env.example`:
-   - `RAZORPAY_KEY_ID`
-   - `RAZORPAY_KEY_SECRET`
-   - `APPS_SCRIPT_URL`
-3. Deploy. `api/register.js` and `api/verify.js` are picked up automatically as
-   serverless functions at `/api/register` and `/api/verify`.
-
-## 5. Test the flow
-
-1. Open `/register.html`, fill the form, pick a category — the fee should appear.
-2. Submit → Razorpay checkout opens. Use a
-   [Razorpay test card](https://razorpay.com/docs/payments/payments/test-card-upi-details/)
-   to pay.
-3. Check the Google Sheet — you should see a row go from `pending` to `paid`, with
-   the payment ID filled in.
-4. Only once that works end-to-end, swap the test keys for live keys in Vercel.
-
-## College ID proof upload
-
-`register.html` now requires a photo/PDF of the registrant's college ID card
-(roll number visible) before they can pay. It's uploaded to Google Drive via
-the same service account already used for Sheets, and the resulting link is
-logged in a new **ID Proof Link** column (column J) next to each row.
-
-Setup:
-1. Create a Drive folder for ID proofs, share it with your
-   `GOOGLE_SERVICE_ACCOUNT_EMAIL` as **Editor**.
-2. Copy the folder ID from its URL and add it in Vercel as
-   `GOOGLE_DRIVE_FOLDER_ID`.
-3. In the Sheet, add a header for column J: `id_proof_link`.
-
-If this env var isn't set, registration still works — the upload is just
-skipped and a warning is logged.
-
-## Content still to fill in
-
-The template still has a few `[bracketed placeholders]` for things only you know:
-workshop dates, convener name(s) and contact details, department name, third
-speaker bio, and the campus map image on `contact.html`. Search each page for `[`
-to find them.
+```bash
+node server.js
+```
+Opens the site at `http://localhost:3000/` with clean URLs and mock registration/payment endpoints.

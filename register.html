@@ -12,8 +12,32 @@
 <body data-page="register">
   <a href="#main-content" class="skip-link">Skip to main content</a>
 
-<!-- ============ HEADER INJECTION POINT ============ -->
-<div id="header-placeholder"></div>
+<!-- ============ THE NAVBAR (Academic Style) ============ -->
+<nav class="site-navbar">
+  <div class="wrap nav-container" id="navContainer">
+    <a href="/" class="nav-brand">
+      <span class="nav-brand-main">AI for Secure 6G</span>
+      <span class="nav-brand-sub">Foundations of FL, XAI &amp; LLMs</span>
+    </a>
+    <div class="nav-right">
+      <ul class="nav-links" id="navLinks">
+        <li><a href="/" data-nav="home">Home</a></li>
+        <li><a href="/details" data-nav="details">Details</a></li>
+        <li><a href="/schedule" data-nav="schedule">Schedule</a></li>
+        <li><a href="/contact" data-nav="contact">Contact</a></li>
+      </ul>
+      <a href="/register" data-nav="register" class="nav-register-btn active">Register</a>
+      <button class="nav-toggle" id="navToggle" aria-controls="navLinks" aria-expanded="false" aria-label="Toggle navigation menu">
+        <span class="nav-toggle-bars" aria-hidden="true">
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+        </span>
+        <span class="nav-toggle-text">Menu</span>
+      </button>
+    </div>
+  </div>
+</nav>
 
 <main id="main-content">
 
@@ -74,12 +98,12 @@
           </li>
           <li class="reg-steps-item">
             <span class="reg-steps-badge">4</span>
-            <span class="reg-steps-text">Come back to this page, enter your SBI Collect reference number and payment date, and upload a screenshot of your payment confirmation to confirm your seat.</span>
+            <span class="reg-steps-text">Come back to this page, enter your SBI Collect reference number, and upload a screenshot of your payment confirmation to confirm your seat.</span>
           </li>
         </ol>
 
         <!-- ============ PDF PAYMENT GUIDE ============ -->
-        <a class="pdf-guide" href="payment-guide.html" target="_blank" rel="noopener" style="margin-top: 1.75rem;">
+        <a class="pdf-guide" href="/payment-guide" target="_blank" rel="noopener" style="margin-top: 1.75rem;">
           <span class="pdf-guide-icon">📄</span>
           <span class="pdf-guide-text">
             <strong>Payment guide (PDF)</strong>
@@ -88,7 +112,7 @@
           <span class="pdf-guide-arrow">↓</span>
         </a>
 
-        <!-- ============ CONSOLIDATED INFO PANEL (replaces 3 stacked note-boxes) ============ -->
+        <!-- ============ CONSOLIDATED INFO PANEL ============ -->
         <div class="info-compact" style="margin-top: 1.75rem;">
           <div class="info-compact-item">
             <span class="info-compact-icon">🎁</span>
@@ -108,7 +132,7 @@
             <span class="info-compact-icon">💬</span>
             <span class="info-compact-text">
               <strong>Need help?</strong>
-              <span>If you experience any issues during registration, please reach out via the <a href="contact.html">Contact page</a>.</span>
+              <span>If you experience any issues during registration, please reach out via the <a href="/contact">Contact page</a>.</span>
             </span>
           </div>
         </div>
@@ -157,7 +181,7 @@
             <span class="field-hint">Workshop dates: 20–24 December 2026. On-campus mode only.</span>
           </div>
 
-          <!-- ============ ACCOMMODATION DATES (shown only for "With Accommodation") ============ -->
+          <!-- ============ ACCOMMODATION DATES ============ -->
           <div class="form-row" id="stayDatesRow" hidden>
             <span class="form-section-caption">Stay dates</span>
             <div class="form-grid-2">
@@ -187,7 +211,7 @@
             <span class="field-hint">Accommodation is ₹700 per night. You can arrive a day early (19th) or leave a day after the workshop ends (25th) if you need to.</span>
           </div>
 
-          <!-- ============ FEE SUMMARY (updates live) ============ -->
+          <!-- ============ FEE SUMMARY ============ -->
           <div class="fee-summary" id="feeSummary" hidden>
             <div class="fee-summary-row" id="feeSummaryBase">
               <span>Registration fee</span>
@@ -213,9 +237,15 @@
             Please double-check your email — payment instructions (via SBI Collect) and any workshop updates will be sent there.
           </div>
 
+          <div style="margin-top: 1.25rem; text-align: center; border-top: 1px solid var(--gray-border); padding-top: 1rem;">
+            <button type="button" class="btn btn-ghost" id="showPaymentStepBtn" style="font-size: 0.9rem; padding: 0.5rem 1rem;">
+              Already registered? Submit payment proof →
+            </button>
+          </div>
+
         </form>
 
-        <!-- ============ SUCCESS STATE (shown after registration is submitted) ============ -->
+        <!-- ============ SUCCESS STATE ============ -->
         <div class="reg-success" id="regSuccess" hidden>
           <div class="reg-success-icon">✓</div>
           <h3>Registration received</h3>
@@ -223,25 +253,25 @@
           <p class="reg-success-id">One step left — complete your payment below to confirm your seat.</p>
         </div>
 
-        <!-- ============ PAYMENT STEP (comes out of hiding once registration succeeds) ============ -->
+        <!-- ============ PAYMENT STEP ============ -->
         <div class="payment-step reveal-pop" id="paymentStep" hidden>
           <div class="payment-step-divider"></div>
 
           <div class="payment-step-pay">
             <span class="eyebrow">Step 1 — Pay</span>
-            <h3>Pay <span id="paymentDueAmount">₹0</span> via SBI Collect</h3>
+            <h3>Pay <span id="paymentDueAmount">₹3,000</span> via SBI Collect</h3>
             <p>Click below to open SBI Collect's secure payment page in a new tab and complete your payment there. Keep the confirmation screenshot or bank SMS/email — you'll need it for the next step.</p>
             <a class="btn btn-primary" id="sbiCollectBtn" href="https://www.onlinesbi.sbi/sbicollect/icollecthome.htm" target="_blank" rel="noopener" style="width:100%; text-align:center;">
               Pay via SBI Collect ↗
             </a>
 
-            <!-- ============ PDF PAYMENT GUIDE — plain inline link (kept light, right where it's needed) ============ -->
+            <!-- ============ PDF PAYMENT GUIDE ============ -->
             <p class="pdf-guide-inline">
-              Not sure what to select on SBI Collect? <a href="payment-guide.html" target="_blank" rel="noopener">View the payment guide ↗</a>
+              Not sure what to select on SBI Collect? <a href="/payment-guide" target="_blank" rel="noopener">View the payment guide ↗</a>
             </p>
           </div>
 
-          <!-- ============ PROOF OF PAYMENT (kept below the SBI Collect button) ============ -->
+          <!-- ============ PROOF OF PAYMENT ============ -->
           <div class="payment-step-proof">
             <span class="eyebrow">Step 2 — Confirm</span>
             <h3>Submit your payment proof</h3>
@@ -249,8 +279,14 @@
 
             <form id="paymentProofForm" novalidate>
               <div class="form-row">
+                <label for="paymentEmail">Registered Email Address</label>
+                <input type="email" id="paymentEmail" name="paymentEmail" required autocomplete="email" placeholder="name@example.com">
+                <span class="field-hint">The email address you entered during registration.</span>
+              </div>
+
+              <div class="form-row">
                 <label for="paymentRef">SBI Collect Reference Number</label>
-                <input type="text" id="paymentRef" name="paymentRef" required>
+                <input type="text" id="paymentRef" name="paymentRef" required placeholder="e.g. DU12345678">
               </div>
 
               <div class="form-row">
@@ -284,7 +320,7 @@
               <div class="reg-success-icon">✓</div>
               <h3>Payment proof received</h3>
               <p>We've logged your payment details — we'll verify them and confirm your seat shortly.</p>
-              <a class="btn btn-ghost" href="index.html">Back to home</a>
+              <a class="btn btn-ghost" href="/">Back to home</a>
             </div>
           </div>
         </div>
@@ -325,30 +361,30 @@
   </div>
 </footer>
 
-<script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
-<script src="js/include.js"></script>
-<script src="js/main.js"></script>
-<script src="js/registration.js"></script>
+<script defer src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
+<script defer src="js/include.js"></script>
+<script defer src="js/main.js"></script>
+<script defer src="js/registration.js"></script>
 
-<!-- ============ STEPPER SYNC (purely visual — watches the same hidden attributes registration.js already toggles) ============ -->
+<!-- ============ STEPPER SYNC ============ -->
 <script>
 (function () {
+  var step1 = document.querySelector('.reg-step[data-step="1"]');
   var step2 = document.querySelector('.reg-step[data-step="2"]');
   var step3 = document.querySelector('.reg-step[data-step="3"]');
   var line1 = document.getElementById('regStepLine1');
   var line2 = document.getElementById('regStepLine2');
-  var step1 = document.querySelector('.reg-step[data-step="1"]');
 
   var paymentStep = document.getElementById('paymentStep');
   var paymentSuccess = document.getElementById('paymentSuccess');
 
   function activate(step) {
-    if (step === 2) {
+    if (step === 2 && step1 && step2 && line1) {
       step1.classList.remove('is-active');
       step1.classList.add('is-done');
       step2.classList.add('is-active');
       line1.classList.add('is-done');
-    } else if (step === 3) {
+    } else if (step === 3 && step2 && step3 && line2) {
       step2.classList.remove('is-active');
       step2.classList.add('is-done');
       step3.classList.add('is-active');
@@ -362,6 +398,7 @@
       if (!el.hasAttribute('hidden')) onShow();
     });
     mo.observe(el, { attributes: true, attributeFilter: ['hidden'] });
+    if (!el.hasAttribute('hidden')) onShow();
   }
 
   watch(paymentStep, function () { activate(2); });

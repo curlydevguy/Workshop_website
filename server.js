@@ -41,9 +41,9 @@ const server = http.createServer(async (req, res) => {
       try {
         const data = JSON.parse(body || '{}');
         const amount = data.amount || 3000;
-        console.log(`[Registration Received] ${data.fullName || 'User'} (${data.email || 'no-email'}) - ₹${amount}`);
+        console.log(`[Local API /api/register] Received: ${data.fullName || 'User'} (${data.email || 'no-email'}) - Cat: ${data.category} - ₹${amount}`);
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ success: true, amount }));
+        res.end(JSON.stringify({ success: true, amount, email: (data.email || '').trim().toLowerCase() }));
       } catch (e) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Invalid JSON payload' }));
@@ -59,7 +59,7 @@ const server = http.createServer(async (req, res) => {
     req.on('end', () => {
       try {
         const data = JSON.parse(body || '{}');
-        console.log(`[Payment Proof Received] ${data.email} - Ref: ${data.reference}`);
+        console.log(`[Local API /api/submit-payment] Payment Proof: ${data.email} - Ref: ${data.reference}`);
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ success: true }));
       } catch (e) {
@@ -70,35 +70,64 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // Static file delivery
+  // Static file delivery with clean URLs support
   let reqPath = decodeURI(req.url.split('?')[0]);
   if (reqPath === '/' || reqPath === '') reqPath = '/index.html';
 
   const safePath = path.normalize(reqPath).replace(/^(\.\.[\/\\])+/, '');
   let filePath = path.join(PUBLIC_DIR, safePath);
 
-  fs.stat(filePath, (err, stats) => {
-    if (err) {
-      res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
-      res.end('<h1>404 Not Found</h1><p>The requested file does not exist.</p>');
-      return;
-    }
-
-    if (stats.isDirectory()) {
-      filePath = path.join(filePath, 'index.html');
-    }
-
-    const ext = path.extname(filePath).toLowerCase();
+  const serveFile = (fileToServe) => {
+    const ext = path.extname(fileToServe).toLowerCase();
     const contentType = MIME_TYPES[ext] || 'application/octet-stream';
 
-    fs.readFile(filePath, (readErr, content) => {
+    const headers = { 'Content-Type': contentType };
+    if (['.css', '.js', '.png', '.jpg', '.jpeg', '.webp', '.avif', '.svg', '.ico', '.pdf'].includes(ext)) {
+      headers['Cache-Control'] = 'public, max-age=86400, stale-while-revalidate=604800';
+    } else {
+      headers['Cache-Control'] = 'no-cache';
+    }
+
+    fs.readFile(fileToServe, (readErr, content) => {
       if (readErr) {
         res.writeHead(500, { 'Content-Type': 'text/plain' });
         res.end('500 Internal Server Error');
         return;
       }
-      res.writeHead(200, { 'Content-Type': contentType });
+      res.writeHead(200, headers);
       res.end(content);
+    });
+  };
+
+  fs.stat(filePath, (err, stats) => {
+    if (!err && stats.isDirectory()) {
+      filePath = path.join(filePath, 'index.html');
+      fs.stat(filePath, (subErr, subStats) => {
+        if (!subErr && subStats.isFile()) {
+          serveFile(filePath);
+        } else {
+          res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+          res.end('<h1>404 Not Found</h1>');
+        }
+      });
+      return;
+    }
+
+    if (!err && stats.isFile()) {
+      serveFile(filePath);
+      return;
+    }
+
+    // Clean URL resolution: try appending .html if direct path doesn't exist
+    const htmlPath = filePath + '.html';
+    fs.stat(htmlPath, (htmlErr, htmlStats) => {
+      if (!htmlErr && htmlStats.isFile()) {
+        serveFile(htmlPath);
+        return;
+      }
+
+      res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.end('<h1>404 Not Found</h1><p>The requested page does not exist.</p>');
     });
   });
 });
