@@ -65,25 +65,6 @@
     return BASE_FEE + nights * ACCOMMODATION_PER_NIGHT;
   }
 
-  function syncCategoryFromDates() {
-    if (!checkInDate || !checkOutDate || !categorySelect) return;
-    const key = `with_accommodation_${checkInDate.value}_${checkOutDate.value}`;
-    const matchingOpt = Array.from(categorySelect.options).find(o => o.value === key);
-    if (matchingOpt) {
-      categorySelect.value = key;
-    }
-  }
-
-  function syncDatesFromCategory() {
-    if (!categorySelect) return;
-    const opt = categorySelect.options[categorySelect.selectedIndex];
-    if (!opt) return;
-    const inDay = opt.dataset.in;
-    const outDay = opt.dataset.out;
-    if (inDay && checkInDate) checkInDate.value = inDay;
-    if (outDay && checkOutDate) checkOutDate.value = outDay;
-  }
-
   function updateStayVisibility() {
     if (!categorySelect || !stayDatesRow) return;
     stayDatesRow.hidden = !isWithStay();
@@ -112,24 +93,17 @@
 
   if (categorySelect) {
     categorySelect.addEventListener('change', () => {
-      syncDatesFromCategory();
       updateStayVisibility();
       updateFeeSummary();
     });
   }
 
   if (checkInDate) {
-    checkInDate.addEventListener('change', () => {
-      syncCategoryFromDates();
-      updateFeeSummary();
-    });
+    checkInDate.addEventListener('change', updateFeeSummary);
   }
 
   if (checkOutDate) {
-    checkOutDate.addEventListener('change', () => {
-      syncCategoryFromDates();
-      updateFeeSummary();
-    });
+    checkOutDate.addEventListener('change', updateFeeSummary);
   }
 
   // Initial sync
