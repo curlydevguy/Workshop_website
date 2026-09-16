@@ -43,6 +43,12 @@
   const MAX_SCREENSHOT_BYTES = 4 * 1024 * 1024; // 4 MB
   let submittedEmail = null;
 
+  const BASE_FEE = 3000;
+
+  function isWithStay() {
+    return categorySelect && categorySelect.value !== 'without_accommodation';
+  }
+
   // ---- Nights + fee math ----
   function nightsSelected() {
     if (!checkInDate || !checkOutDate) return 0;
@@ -53,36 +59,41 @@
   }
 
   function currentFee() {
-    if (!categorySelect) return 3000;
-    const opt = categorySelect.options[categorySelect.selectedIndex];
-    const baseFee = opt ? Number(opt.dataset.fee) : NaN;
-    if (!Number.isFinite(baseFee)) return null;
+    if (!categorySelect) return BASE_FEE;
+    if (!isWithStay()) return BASE_FEE;
+    const nights = nightsSelected();
+    return BASE_FEE + nights * ACCOMMODATION_PER_NIGHT;
+  }
 
-    if (categorySelect.value === 'with_accommodation') {
-      const nights = nightsSelected();
-      return baseFee + nights * ACCOMMODATION_PER_NIGHT;
+  function syncCategoryFromDates() {
+    if (!checkInDate || !checkOutDate || !categorySelect) return;
+    const key = `with_accommodation_${checkInDate.value}_${checkOutDate.value}`;
+    const matchingOpt = Array.from(categorySelect.options).find(o => o.value === key);
+    if (matchingOpt) {
+      categorySelect.value = key;
     }
-    return baseFee;
+  }
+
+  function syncDatesFromCategory() {
+    if (!categorySelect) return;
+    const opt = categorySelect.options[categorySelect.selectedIndex];
+    if (!opt) return;
+    const inDay = opt.dataset.in;
+    const outDay = opt.dataset.out;
+    if (inDay && checkInDate) checkInDate.value = inDay;
+    if (outDay && checkOutDate) checkOutDate.value = outDay;
   }
 
   function updateStayVisibility() {
     if (!categorySelect || !stayDatesRow) return;
-    const withStay = categorySelect.value === 'with_accommodation';
-    stayDatesRow.hidden = !withStay;
+    stayDatesRow.hidden = !isWithStay();
   }
 
   function updateFeeSummary() {
     if (!categorySelect || !feeSummary) return;
-    const opt = categorySelect.options[categorySelect.selectedIndex];
-    const baseFee = opt ? Number(opt.dataset.fee) : NaN;
-    const withStay = categorySelect.value === 'with_accommodation';
+    const withStay = isWithStay();
 
-    if (!Number.isFinite(baseFee)) {
-      feeSummary.hidden = true;
-      return;
-    }
-
-    if (feeSummaryBaseAmount) feeSummaryBaseAmount.textContent = '₹' + baseFee.toLocaleString('en-IN');
+    if (feeSummaryBaseAmount) feeSummaryBaseAmount.textContent = '₹' + BASE_FEE.toLocaleString('en-IN');
 
     if (withStay && feeSummaryStay && feeSummaryStayLabel && feeSummaryStayAmount) {
       const nights = nightsSelected();
@@ -101,6 +112,7 @@
 
   if (categorySelect) {
     categorySelect.addEventListener('change', () => {
+      syncDatesFromCategory();
       updateStayVisibility();
       updateFeeSummary();
     });
@@ -108,16 +120,16 @@
 
   if (checkInDate) {
     checkInDate.addEventListener('change', () => {
-      if (Number(checkOutDate.value) <= Number(checkInDate.value)) {
-        const nextOption = Array.from(checkOutDate.options).find(o => Number(o.value) > Number(checkInDate.value));
-        if (nextOption) checkOutDate.value = nextOption.value;
-      }
+      syncCategoryFromDates();
       updateFeeSummary();
     });
   }
 
   if (checkOutDate) {
-    checkOutDate.addEventListener('change', updateFeeSummary);
+    checkOutDate.addEventListener('change', () => {
+      syncCategoryFromDates();
+      updateFeeSummary();
+    });
   }
 
   // Initial sync
@@ -172,13 +184,14 @@
         showError('Please select a registration category.');
         return;
       }
-      if (categorySelect.value === 'with_accommodation' && nightsSelected() <= 0) {
-        showError('Please choose a check-out date after your check-in date.');
+      if (isWithStay() && nightsSelected() <= 0) {
+        showError('Please choose a valid stay date range (Check-in 19 or 20 Dec, Check-out 24 or 25 Dec).');
         return;
       }
 
       const rawEmail = document.getElementById('email').value.trim();
       const cleanEmail = rawEmail.toLowerCase();
+      const withStay = isWithStay();
 
       const payload = {
         fullName: document.getElementById('fullName').value.trim(),
@@ -186,8 +199,8 @@
         phone: document.getElementById('phone').value.trim(),
         institute: document.getElementById('institute').value.trim(),
         category: categorySelect.value,
-        checkInDate: categorySelect.value === 'with_accommodation' ? checkInDate.value : '',
-        checkOutDate: categorySelect.value === 'with_accommodation' ? checkOutDate.value : '',
+        checkInDate: withStay ? checkInDate.value : '',
+        checkOutDate: withStay ? checkOutDate.value : '',
         amount: fee,
       };
 

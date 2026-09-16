@@ -9,9 +9,8 @@ const { appendRegistrationRow, isEmailAlreadyRegistered } = require('./sheets');
 
 const BASE_FEE = 3000;
 const ACCOMMODATION_PER_NIGHT = 700;
-const VALID_CATEGORIES = ['without_accommodation', 'with_accommodation'];
-const VALID_CHECKIN_DAYS = [19, 20, 21, 22, 23, 24];
-const VALID_CHECKOUT_DAYS = [20, 21, 22, 23, 24, 25];
+const VALID_CHECKIN_DAYS = [19, 20];
+const VALID_CHECKOUT_DAYS = [24, 25];
 
 function computeFee(category, checkInDate, checkOutDate) {
   if (category === 'without_accommodation') {
@@ -51,19 +50,22 @@ module.exports = async function handler(req, res) {
       return;
     }
 
-    if (!VALID_CATEGORIES.includes(category)) {
+    const isWithStay = category.startsWith('with_accommodation');
+    const isWithoutStay = category === 'without_accommodation';
+
+    if (!isWithStay && !isWithoutStay) {
       res.status(400).json({ error: 'Invalid registration category selected.' });
       return;
     }
 
-    if (category === 'with_accommodation' && (!checkInDate || !checkOutDate)) {
-      res.status(400).json({ error: 'Please select your check-in and check-out dates.' });
+    if (isWithStay && (!checkInDate || !checkOutDate)) {
+      res.status(400).json({ error: 'Please select your check-in (19 or 20 Dec) and check-out (24 or 25 Dec) dates.' });
       return;
     }
 
     const amount = computeFee(category, checkInDate, checkOutDate);
     if (amount === null) {
-      res.status(400).json({ error: 'Please choose a valid check-in/check-out date range (check-out must be after check-in).' });
+      res.status(400).json({ error: 'Please choose a valid stay date range: Check-in on 19 or 20 Dec, Check-out on 24 or 25 Dec.' });
       return;
     }
 
@@ -81,9 +83,12 @@ module.exports = async function handler(req, res) {
     }
 
     const timestamp = new Date().toISOString();
-    const stayDates = category === 'with_accommodation' ? `${checkInDate} Dec to ${checkOutDate} Dec 2026` : '';
+    const inDay = Number(checkInDate);
+    const outDay = Number(checkOutDate);
+    const stayDates = isWithStay ? `${inDay} Dec to ${outDay} Dec 2026` : '';
+    const displayCategory = isWithStay ? `With Accommodation (${inDay}–${outDay} Dec)` : 'Without Accommodation';
 
-    console.log(`[register.js] Creating registration row: ${cleanEmail} (${category}, ₹${amount})`);
+    console.log(`[register.js] Creating registration row: ${cleanEmail} (${displayCategory}, ₹${amount})`);
 
     await appendRegistrationRow([
       timestamp,
@@ -91,7 +96,7 @@ module.exports = async function handler(req, res) {
       cleanEmail,
       cleanPhone,
       cleanInstitute,
-      category,
+      displayCategory,
       amount,
       '',                 // H: Payment Reference (filled in Step 3)
       'awaiting_payment', // I: Status

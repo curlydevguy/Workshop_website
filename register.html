@@ -175,8 +175,13 @@
           <div class="form-row">
             <label for="category">Registration Category</label>
             <select id="category" name="category" required>
-              <option value="without_accommodation" data-fee="3000">Without Accommodation — ₹3,000</option>
-              <option value="with_accommodation" data-fee="3000">With Accommodation — ₹3,000 + ₹700/night</option>
+              <option value="without_accommodation" data-fee="3000" data-in="" data-out="">Without Accommodation — ₹3,000</option>
+              <optgroup label="With Accommodation">
+                <option value="with_accommodation_19_24" data-fee="6500" data-in="19" data-out="24">With Accommodation: 19–24 Dec (5 nights) — ₹6,500</option>
+                <option value="with_accommodation_19_25" data-fee="7200" data-in="19" data-out="25">With Accommodation: 19–25 Dec (6 nights) — ₹7,200</option>
+                <option value="with_accommodation_20_24" data-fee="5800" data-in="20" data-out="24">With Accommodation: 20–24 Dec (4 nights) — ₹5,800</option>
+                <option value="with_accommodation_20_25" data-fee="6500" data-in="20" data-out="25">With Accommodation: 20–25 Dec (5 nights) — ₹6,500</option>
+              </optgroup>
             </select>
             <span class="field-hint">Workshop dates: 20–24 December 2026. On-campus mode only.</span>
           </div>
@@ -188,27 +193,19 @@
               <div class="form-row">
                 <label for="checkInDate">Check-in date</label>
                 <select id="checkInDate" name="checkInDate">
-                  <option value="19">19 December</option>
+                  <option value="19" selected>19 December</option>
                   <option value="20">20 December</option>
-                  <option value="21">21 December</option>
-                  <option value="22">22 December</option>
-                  <option value="23">23 December</option>
-                  <option value="24">24 December</option>
                 </select>
               </div>
               <div class="form-row">
                 <label for="checkOutDate">Check-out date</label>
                 <select id="checkOutDate" name="checkOutDate">
-                  <option value="20">20 December</option>
-                  <option value="21">21 December</option>
-                  <option value="22">22 December</option>
-                  <option value="23">23 December</option>
                   <option value="24" selected>24 December</option>
                   <option value="25">25 December</option>
                 </select>
               </div>
             </div>
-            <span class="field-hint">Accommodation is ₹700 per night. You can arrive a day early (19th) or leave a day after the workshop ends (25th) if you need to.</span>
+            <span class="field-hint">Check-in: 19 or 20 Dec. Check-out: 24 or 25 Dec. Accommodation is ₹700 per night.</span>
           </div>
 
           <!-- ============ FEE SUMMARY ============ -->
